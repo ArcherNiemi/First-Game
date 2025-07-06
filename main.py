@@ -137,7 +137,7 @@ def run(level):
             player.x += PLAYER_VELOCITY
 
         for star in stars[:]:
-            star.y += STAR_VELOCITY
+            star.y += STAR_VELOCITY *  (1 + level / 10)
             if star.y > HEIGHT:
                 stars.remove(star)
             elif star.y + star.height >= player.y and star.colliderect(player):
