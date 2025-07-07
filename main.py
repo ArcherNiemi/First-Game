@@ -13,17 +13,25 @@ FULL_HEART = pygame.transform.scale(pygame.image.load("full_heart.png"), (WIDTH 
 
 PLAYER_WIDTH = 40
 PLAYER_HEIGHT = 60
-PLAYER_VELOCITY = 8
+PLAYER_VELOCITY = 4
 PLAYER_STARTING_HEALTH = 3
 
 STAR_WIDTH = 10
 STAR_HEIGHT = 20
-STAR_VELOCITY = 8
+STAR_VELOCITY = 4
 
 FONT = pygame.font.SysFont("arial", 30)
 FONT_START = pygame.font.SysFont("arial", 80)
 FONT_END = pygame.font.SysFont("arial", 100)
 FONT_LEVEL = pygame.font.SysFont("arial", 60)
+FONT_UPGRADE = pygame.font.SysFont("arial", 30)
+
+START_DELAY_BETWEEN_STARS = 2000
+START_AMOUNT_OF_STARS_PER_WAVE = 5
+START_LENGTH_OF_ROUNDS = 5
+
+UPGRADE_LIST = ["Hp Increase", "Full Heal", "Shrink", "Shield", "Time Slow"]
+UPGRADE_SIZE = 150
 
 health = PLAYER_STARTING_HEALTH
 
@@ -78,6 +86,24 @@ def levelEnd(level: int):
     pygame.display.update()
     pygame.time.delay(1000)
 
+def updrageScreen():
+    WIN.blit(BG, (0, 0))
+    upgrade = [0,0]
+    upgrade[0] = random.randint(0, 4)
+    upgrade[1] = random.randint(0, 4)
+    while(upgrade[0] == upgrade[1]):
+        upgrade[1] = random.randint(0, 4)
+    for i in range(2):
+        pygame.draw.rect(WIN, "black", pygame.Rect(WIDTH / (1.5 * (i + 1)) - UPGRADE_SIZE / 2, HEIGHT / 2 - UPGRADE_SIZE / 2, UPGRADE_SIZE, UPGRADE_SIZE))
+        for t in range(5):
+            if(upgrade[i] == t):
+                upgrade_text = FONT_UPGRADE.render(UPGRADE_LIST[i], 1, "white")
+                WIN.blit(upgrade_text, (WIDTH/((i+1) * 1.5) - upgrade_text.get_width()/2, HEIGHT/2 - upgrade_text.get_height()/2))
+    pygame.display.update()
+    pygame.time.delay(1000)
+
+
+
 
 
 def main():
@@ -87,6 +113,7 @@ def main():
         levelStart(level)
         run(level)
         levelEnd(level)
+        updrageScreen()
         level += 1
 
 def run(level):
@@ -105,15 +132,17 @@ def run(level):
     hit = False
     dead = False
 
+    difficulty = 1 + level / 10
+
     while run:
-        star_count += clock.tick(60)
+        star_count += clock.tick(120)
         elapsed_time = time.time() - start_time
 
-        star_add_increment = random.randint(1, int(1000 / (level / 10)))
+        star_add_increment = random.randint(int(round(START_DELAY_BETWEEN_STARS / difficulty) / 3), int(round(START_DELAY_BETWEEN_STARS / difficulty)))
 
-        if(elapsed_time < 5 * (1 + level / 5)):
+        if(elapsed_time < START_LENGTH_OF_ROUNDS * difficulty):
             if star_count > star_add_increment:
-                for _ in range(random.randint(0, int(5 * (1 + level / 5)))):
+                for _ in range(random.randint(int(round(START_AMOUNT_OF_STARS_PER_WAVE * difficulty)) - 3, int(round(START_AMOUNT_OF_STARS_PER_WAVE * difficulty)))):
                     star_x = random.randint(0, WIDTH - STAR_WIDTH)
                     star = pygame.Rect(star_x, -STAR_HEIGHT, STAR_WIDTH, STAR_HEIGHT)
                     stars.append(star)
@@ -137,7 +166,7 @@ def run(level):
             player.x += PLAYER_VELOCITY
 
         for star in stars[:]:
-            star.y += STAR_VELOCITY *  (1 + level / 10)
+            star.y += STAR_VELOCITY
             if star.y > HEIGHT:
                 stars.remove(star)
             elif star.y + star.height >= player.y and star.colliderect(player):
