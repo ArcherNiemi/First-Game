@@ -23,7 +23,7 @@ STAR_VELOCITY = 4
 
 FONT = pygame.font.SysFont("arial", 30)
 FONT_START = pygame.font.SysFont("arial", 80)
-FONT_END = pygame.font.SysFont("arial", 100)
+FONT_END = pygame.font.SysFont("arial", 80)
 FONT_LEVEL = pygame.font.SysFont("arial", 60)
 FONT_UPGRADE = pygame.font.SysFont("arial", 30)
 
@@ -49,9 +49,9 @@ def draw(player, elapsed_time, stars, shield, shrink, timeSlow):
     WIN.blit(BG, (0, 0))
     for i in range(maxHp):
         if(health > i):
-            WIN.blit(FULL_HEART, (WIDTH - (WIDTH / 15) * (i + 1), 0))
+            WIN.blit(FULL_HEART, (WIDTH - (WIDTH / 15) * ((i + 1) * (0.9)) - WIDTH / 60, 0))
         else:
-            WIN.blit(EMPTY_HEART, (WIDTH - (WIDTH / 15) * (i + 1), 0))
+            WIN.blit(EMPTY_HEART, (WIDTH - (WIDTH / 15) * ((i + 1) * (0.9)) - WIDTH / 60, 0))
 
     time_text = FONT.render(f"Time: {round(elapsed_time)}s", 1, "black")
     WIN.blit(time_text, (10, 10))
@@ -294,8 +294,10 @@ def run(level):
         draw(player, elapsed_time, stars, shield, shrink, timeSlow)
 
         if dead:
-            lost_text = FONT_END.render("You Lost!", 1, "black")
-            WIN.blit(lost_text, (WIDTH/2 - lost_text.get_width()/2, HEIGHT/2 - lost_text.get_height()/2))
+            lost_text = FONT_END.render("You Lost", 1, "black")
+            WIN.blit(lost_text, (WIDTH/2 - lost_text.get_width()/2, HEIGHT/2 - lost_text.get_height()))
+            lost_text = FONT_END.render(f"Levels Beaten: {level - 1}", 1, "black")
+            WIN.blit(lost_text, (WIDTH/2 - lost_text.get_width()/2, HEIGHT/2))
             pygame.display.update()
             pygame.time.delay(3000)
             pygame.quit()
