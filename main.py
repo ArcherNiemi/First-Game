@@ -240,8 +240,8 @@ def upgradeScreen():
                     if(clickpos[0] > WIDTH / (1.5 * (i + 1)) - UPGRADE_SIZE / 2 and clickpos[0] < WIDTH / (1.5 * (i + 1)) + UPGRADE_SIZE / 2 
                        and clickpos[1] > HEIGHT / 2 - UPGRADE_SIZE / 2 and clickpos[1] < HEIGHT / 2 + UPGRADE_SIZE / 2):
                         clickedAbility = upgrade[i] % TOTAL_AMOUNT_OF_UPGRADES
-                        print(clickedAbility)
-                        print(rarity_increase[i])
+                        print(f"upgrade: {clickedAbility}")
+                        print(f"rarity: {rarity_increase[i]}")
                         number = rarity_increase[i]
                         run = False
     giveAbility(clickedAbility, number)
