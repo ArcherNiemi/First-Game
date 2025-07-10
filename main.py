@@ -80,7 +80,7 @@ currentDirection = slime_left
 def draw(player, elapsed_time, stars, shield, shrink, timeSlow, level, currentShieldCoolDown, currentShrinkCoolDown, currentTimeSlowCoolDown, shrink_time, shield_time, timeSlow_time):
     pygame.draw.rect(WIN, "red", player)
     for star in stars:
-        pygame.draw.rect(WIN, "black", star)
+        pygame.draw.rect(WIN, "black", star[0])
     WIN.blit(BG, (0, 0))
     if(timeSlow):
         draw_rect_alpha(WIN, pygame.Color(128, 0, 128, 90), pygame.Rect(0,0,WIDTH, HEIGHT))
@@ -127,7 +127,7 @@ def draw(player, elapsed_time, stars, shield, shrink, timeSlow, level, currentSh
         WIN.blit(SHIELD, (player.x + player.width / 2 - SHIELD.get_width() / 2, HEIGHT - SHIELD.get_height()))
 
     for star in stars:
-        WIN.blit(BULLET, (star.x, star.y))
+        WIN.blit(BULLET, (star[0].x, star[0].y))
 
     pygame.display.update()
 
@@ -378,7 +378,7 @@ def run(level):
             if star_count > star_add_increment:
                 for _ in range(random.randint(int(round(START_AMOUNT_OF_STARS_PER_WAVE * difficulty)/2), int(round(START_AMOUNT_OF_STARS_PER_WAVE * difficulty)))):
                     star_x = random.randint(0, WIDTH - STAR_WIDTH)
-                    star = pygame.Rect(star_x, -STAR_HEIGHT, STAR_WIDTH, STAR_HEIGHT)
+                    star = [pygame.Rect(star_x, -STAR_HEIGHT, STAR_WIDTH, STAR_HEIGHT), random.randint(STAR_VELOCITY - 1, STAR_VELOCITY + 1)]
                     stars.append(star)
                 
                 star_add_increment = max(200, star_add_increment - 50)
@@ -425,10 +425,10 @@ def run(level):
             currentDirection = slime_right
 
         for star in stars[:]:
-            star.y += STAR_VELOCITY
-            if star.y > HEIGHT:
+            star[0].y += star[1]
+            if star[0].y > HEIGHT:
                 stars.remove(star)
-            elif star.y + star.height >= player.y and star.colliderect(player):
+            elif star[0].y + star[0].height >= player.y and star[0].colliderect(player):
                 stars.remove(star)
                 if(not(shield)):
                     hit = True
