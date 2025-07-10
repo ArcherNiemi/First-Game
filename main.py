@@ -369,14 +369,14 @@ def run(level):
         else:
             currentTimeSlowCoolDown = startTimeSlowCoolDown - time.time() + COOL_DOWN
         if(timeSlow):
-            star_add_increment = int(round(random.randint(int(round(START_DELAY_BETWEEN_STARS / difficulty) / 3), int(round(START_DELAY_BETWEEN_STARS / difficulty))) / 2))
+            star_add_increment = int(round(random.randint(int(round(START_DELAY_BETWEEN_STARS / difficulty) / 3), int(round(START_DELAY_BETWEEN_STARS / difficulty))) * TIME_SLOW_AMOUNT))
         else:
             star_add_increment = random.randint(int(round(START_DELAY_BETWEEN_STARS / difficulty) / 3), int(round(START_DELAY_BETWEEN_STARS / difficulty)))
 
 
         if(elapsed_time < START_LENGTH_OF_ROUNDS * difficulty):
             if star_count > star_add_increment:
-                for _ in range(random.randint(int(round(START_AMOUNT_OF_STARS_PER_WAVE * difficulty)) - 3, int(round(START_AMOUNT_OF_STARS_PER_WAVE * difficulty)))):
+                for _ in range(random.randint(int(round(START_AMOUNT_OF_STARS_PER_WAVE * difficulty)/2), int(round(START_AMOUNT_OF_STARS_PER_WAVE * difficulty)))):
                     star_x = random.randint(0, WIDTH - STAR_WIDTH)
                     star = pygame.Rect(star_x, -STAR_HEIGHT, STAR_WIDTH, STAR_HEIGHT)
                     stars.append(star)
