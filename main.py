@@ -46,6 +46,7 @@ FONT_LEVEL = pygame.font.SysFont("arial", 60)
 FONT_UPGRADE = pygame.font.SysFont("arial", 30)
 FONT_BUTTONS = pygame.font.SysFont("arial", 40)
 FONT_TITLE = pygame.font.SysFont("arial", 80)
+FONT_RESTART = pygame.font.SysFont("arial", 80)
 
 START_DELAY_BETWEEN_STARS = 2000
 START_AMOUNT_OF_STARS_PER_WAVE = 5
@@ -70,6 +71,7 @@ maxHp = PLAYER_STARTING_HEALTH
 shieldLength = 0
 shrinkLength = 0
 timeSlowLength = 0
+running = True
 
 upgrade_stats = [maxHp, health, shieldLength, shrinkLength, timeSlowLength]
 UPGRADE_STAT_AMOUNT = [1, 0, 0.25, 0.5, 0.75]
@@ -174,7 +176,6 @@ def levelStart(level: int):
     WIN.blit(level_text, (WIDTH/2 - level_text.get_width()/2, HEIGHT/2 - level_text.get_height()/2))
     pygame.display.update()
     pygame.time.delay(1000)
-    
 
 def levelEnd(level: int):
     WIN.blit(BG, (0, 0))
@@ -274,21 +275,64 @@ def giveAbility(clickedAblility, rarity_increase):
             timeSlowLength += 0.75 * rarity_increase
     upgrade_stats = [maxHp, health, shieldLength, shrinkLength, timeSlowLength]
 
+def resetScreen():
+    background = pygame.Rect(0, 0, WIDTH, HEIGHT)
+    pygame.draw.rect(WIN, "black", background)
+    restart_text = FONT_RESTART.render("Restart", 1, "white")
+    WIN.blit(restart_text, (WIDTH/2 - restart_text.get_width()/2, HEIGHT/5 * 2 - restart_text.get_height()/2))
+    quit_text = FONT_RESTART.render("Quit", 1, "white")
+    WIN.blit(quit_text, (WIDTH/2 - quit_text.get_width()/2, HEIGHT/5 * 3 - quit_text.get_height()/2))
+    pygame.display.update()
+    run = True
+    while run:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+                pygame.quit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                clickpos = event.pos
+                if(clickpos[0] > WIDTH / 2 - restart_text.get_width() / 2 and clickpos[0] < WIDTH / 2 + restart_text.get_width() / 2 and clickpos[1] > HEIGHT / 5 * 2 - restart_text.get_height() / 2 and clickpos[1] < HEIGHT / 5 * 2 + restart_text.get_height() / 2):
+                    reset()
+                    run = False
+                elif(clickpos[0] > WIDTH / 2 - quit_text.get_width() / 2 and clickpos[0] < WIDTH / 2 + quit_text.get_width() / 2 and clickpos[1] > HEIGHT / 5 * 3 - quit_text.get_height() / 2 and clickpos[1] < HEIGHT / 5 * 3 + quit_text.get_height() / 2):
+                    run = False
+                    pygame.quit()
+
+def reset():
+    global health
+    global maxHp
+    global shieldLength
+    global shrinkLength
+    global timeSlowLength
+    global upgrade_stats
+    health = PLAYER_STARTING_HEALTH
+    maxHp = PLAYER_STARTING_HEALTH
+    shieldLength = 0
+    shrinkLength = 0
+    timeSlowLength = 0
+    upgrade_stats = [maxHp, health, shieldLength, shrinkLength, timeSlowLength]
+    print("Reset")
 
 def main():
-    level = 1
+    global running
     startScreen()
     while(True):
-        levelStart(level)
-        run(level)
-        levelEnd(level)
-        upgradeScreen()
-        level += 1
+        level = 1
+        running = True
+        while(running):
+            levelStart(level)
+            run(level)
+            if(running):
+                levelEnd(level)
+                upgradeScreen()
+            level += 1
+        resetScreen()
 
 def run(level):
     global currentDirection
     global slime_left
     global slime_right
+    global running
 
     run = True
 
@@ -450,9 +494,8 @@ def run(level):
             WIN.blit(lost_text, (WIDTH/2 - lost_text.get_width()/2, HEIGHT/2))
             pygame.display.update()
             pygame.time.delay(3000)
-            pygame.quit()
-
-            
+            run = False
+            running = False
 
 if __name__ == "__main__":
     main()
