@@ -255,24 +255,24 @@ def giveAbility(clickedAblility, rarity_increase):
     global timeSlowLength
     global upgrade_stats
     if(clickedAblility == 0):
-        maxHp += 1 * rarity_increase
+        maxHp += UPGRADE_STAT_AMOUNT[0] * rarity_increase
     if(clickedAblility == 1):
         health = maxHp
     if(clickedAblility == 2):
         if(shieldLength == 0):
-            shieldLength = 0.5
+            shieldLength = UPGRADE_STAT_AMOUNT[2] * 2
         else:
-            shieldLength += 0.25 * rarity_increase
+            shieldLength += UPGRADE_STAT_AMOUNT[2] * rarity_increase
     if(clickedAblility == 3):
         if(shrinkLength == 0):
-            shrinkLength = 1 
+            shrinkLength = UPGRADE_STAT_AMOUNT[3] * 2
         else:
-            shrinkLength += 0.5 * rarity_increase
+            shrinkLength += UPGRADE_STAT_AMOUNT[3] * rarity_increase
     if(clickedAblility == 4):
         if(timeSlowLength == 0):
-            timeSlowLength = 1.5 
+            timeSlowLength = UPGRADE_STAT_AMOUNT[4] * 2
         else:
-            timeSlowLength += 0.75 * rarity_increase
+            timeSlowLength += UPGRADE_STAT_AMOUNT[4] * rarity_increase
     upgrade_stats = [maxHp, health, shieldLength, shrinkLength, timeSlowLength]
 
 def resetScreen():
