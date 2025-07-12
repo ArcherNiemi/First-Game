@@ -52,7 +52,7 @@ START_DELAY_BETWEEN_STARS = 2000
 START_AMOUNT_OF_STARS_PER_WAVE = 5
 START_LENGTH_OF_ROUNDS = 5
 
-UPGRADE_LIST = ["Hp Increase", "Full Heal", "Shield", "Shrink", "Time Slow"]
+UPGRADE_LIST = ["Hp Increase", "Heal", "Shield", "Shrink", "Time Slow"]
 
 
 SHRINK_SIZE = 2
@@ -74,7 +74,7 @@ timeSlowLength = 0
 running = True
 
 upgrade_stats = [maxHp, health, shieldLength, shrinkLength, timeSlowLength]
-UPGRADE_STAT_AMOUNT = [1, 0, 0.25, 0.5, 0.75]
+UPGRADE_STAT_AMOUNT = [1, 3, 0.25, 0.5, 0.75]
 
 currentDirection = slime_left
 
@@ -188,6 +188,7 @@ def upgradeScreen():
     WIN.blit(BG, (0, 0))
     upgrade = [0,0]
     rarity_increase = [1,1]
+    upgradeColor = "white"
     upgrade[0] = random.randint(0, TOTAL_AMOUNT_OF_UPGRADES * RARE_RARITY - 1)
     upgrade[1] = random.randint(0, TOTAL_AMOUNT_OF_UPGRADES * RARE_RARITY - 1)
 
@@ -196,10 +197,14 @@ def upgradeScreen():
     for i in range(2):
         if(upgrade[i] >= (TOTAL_AMOUNT_OF_UPGRADES * RARE_RARITY) - TOTAL_AMOUNT_OF_UPGRADES):
             rarity_increase[i] = RARE_POWER
+            upgradeColor = "green"
         else:
             rarity_increase[i] = 1
+            upgradeColor = "white"
+
         pygame.draw.rect(WIN, "black", pygame.Rect(WIDTH / (1.5 * (i + 1)) - UPGRADE_SIZE / 2, HEIGHT / 2 - UPGRADE_SIZE / 2, UPGRADE_SIZE, UPGRADE_SIZE))
         WIN.blit(FRAME, (WIDTH / (1.5 * (i + 1)) - UPGRADE_SIZE / 2, HEIGHT / 2 - UPGRADE_SIZE / 2 ))
+
         for t in range(TOTAL_AMOUNT_OF_UPGRADES):
             if(upgrade[i] % TOTAL_AMOUNT_OF_UPGRADES == t):
                 splitUpgrade = UPGRADE_LIST[t].split()
@@ -208,25 +213,18 @@ def upgradeScreen():
                     for p in range(len(splitUpgrade)):
                         upgrade_text = FONT_UPGRADE.render(splitUpgrade[p], 1, "white")
                         WIN.blit(upgrade_text, (WIDTH/((i+1) * 1.5) - upgrade_text.get_width()/2, HEIGHT/2 - (upgrade_text.get_height()/2) * ((len(splitUpgrade)) - p * 2) ))
-                elif(rarity_increase[i] == RARE_POWER and not(upgrade[i] % TOTAL_AMOUNT_OF_UPGRADES == 1)):
-                    if(upgrade[i] % TOTAL_AMOUNT_OF_UPGRADES == 0):
-                        splitUpgrade.append(f"({upgrade_stats[t]} => {upgrade_stats[t] + UPGRADE_STAT_AMOUNT[t] * RARE_POWER})")
-                    elif(upgrade[i] % TOTAL_AMOUNT_OF_UPGRADES == 1):
-                        splitUpgrade.append(f"({health} => {upgrade_stats[0]})")
-                    else:
-                        splitUpgrade.append(f"({upgrade_stats[t]}s => {upgrade_stats[t] + UPGRADE_STAT_AMOUNT[t] * RARE_POWER}s)")
-                    for p in range(len(splitUpgrade)):
-                        upgrade_text = FONT_UPGRADE.render(splitUpgrade[p], 1, "green")
-                        WIN.blit(upgrade_text, (WIDTH/((i+1) * 1.5) - upgrade_text.get_width()/2, HEIGHT/2 - (upgrade_text.get_height()/2) * ((len(splitUpgrade)) - p * 2) ))
                 else:
                     if(upgrade[i] % TOTAL_AMOUNT_OF_UPGRADES == 0):
-                        splitUpgrade.append(f"({upgrade_stats[t]} => {upgrade_stats[t] + UPGRADE_STAT_AMOUNT[t]})")
+                        splitUpgrade.append(f"({upgrade_stats[t]} => {upgrade_stats[t] + UPGRADE_STAT_AMOUNT[t] * rarity_increase[i]})")
                     elif(upgrade[i] % TOTAL_AMOUNT_OF_UPGRADES == 1):
-                        splitUpgrade.append(f"({health} => {upgrade_stats[0]})")
+                        if(health + upgrade_stats[t] >= maxHp):
+                            splitUpgrade.append(f"({health} => {upgrade_stats[0]})")
+                        else:
+                            splitUpgrade.append(f"({upgrade_stats[t]} => {upgrade_stats[t] + UPGRADE_STAT_AMOUNT[t] * rarity_increase[i]})")
                     else:
-                        splitUpgrade.append(f"({upgrade_stats[t]}s => {upgrade_stats[t] + UPGRADE_STAT_AMOUNT[t]}s)")
+                        splitUpgrade.append(f"({upgrade_stats[t]}s => {upgrade_stats[t] + UPGRADE_STAT_AMOUNT[t] * rarity_increase[i]}s)")
                     for p in range(len(splitUpgrade)):
-                        upgrade_text = FONT_UPGRADE.render(splitUpgrade[p], 1, "white")
+                        upgrade_text = FONT_UPGRADE.render(splitUpgrade[p], 1, upgradeColor)
                         WIN.blit(upgrade_text, (WIDTH/((i+1) * 1.5) - upgrade_text.get_width()/2, HEIGHT/2 - (upgrade_text.get_height()/2) * ((len(splitUpgrade)) - p * 2) ))
     pygame.display.update()
     run = True
@@ -257,7 +255,9 @@ def giveAbility(clickedAblility, rarity_increase):
     if(clickedAblility == 0):
         maxHp += UPGRADE_STAT_AMOUNT[0] * rarity_increase
     if(clickedAblility == 1):
-        health = maxHp
+        health += UPGRADE_STAT_AMOUNT[1] * rarity_increase
+        if(health > maxHp):
+            health = maxHp
     if(clickedAblility == 2):
         if(shieldLength == 0):
             shieldLength = UPGRADE_STAT_AMOUNT[2] * 2
