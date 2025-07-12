@@ -7,7 +7,7 @@ pygame.font.init()
 
 WIDTH, HEIGHT = 900, 700
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("test")
+pygame.display.set_caption("Bullet Barrage")
 
 UPGRADE_SIZE = 280
 HEART_SIZE = WIDTH / 15
@@ -17,7 +17,7 @@ ABILITY_SIZE = WIDTH / 20
 SLIME_WIDTH = 60
 SLIME_HEIGHT = 45
 
-STAR_WIDTH = 10
+STAR_WIDTH = 8
 STAR_HEIGHT = 30
 
 BG = pygame.transform.scale(pygame.image.load("vecteezy_green-grass-field-with-blue-sky-ad-white-cloud-nature_40153656.jpg"), (WIDTH, HEIGHT))
@@ -28,7 +28,7 @@ FRAME = pygame.transform.scale(pygame.image.load("Square_Frame_PNG_Clipart.png")
 SHIELD_FULL = pygame.transform.scale(pygame.image.load("Blue_Force_Field_Full.png"), (ABILITY_SIZE, ABILITY_SIZE))
 CLOCK = pygame.transform.scale(pygame.image.load("Time Clock Black Icon - 1000x1000.png"), (ABILITY_SIZE, ABILITY_SIZE))
 SHRINK = pygame.transform.scale(pygame.image.load("resize-option.png"), (ABILITY_SIZE, ABILITY_SIZE))
-BULLET = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("bullets-png-22781(1).png"), (STAR_HEIGHT + 10, STAR_WIDTH)), -90)
+BULLET = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("bullets-png-22781(1).png"), (STAR_HEIGHT + 10, STAR_WIDTH + 2)), -90)
 slime_left = pygame.transform.scale(pygame.image.load("Slime_Left.png"), (SLIME_WIDTH, SLIME_HEIGHT))
 slime_right = pygame.transform.scale(pygame.image.load("Slime_Right.png"), (SLIME_WIDTH, SLIME_HEIGHT))
 
@@ -86,11 +86,19 @@ def draw(player, elapsed_time, stars, shield, shrink, timeSlow, level, currentSh
     WIN.blit(BG, (0, 0))
     if(timeSlow):
         draw_rect_alpha(WIN, pygame.Color(128, 0, 128, 90), pygame.Rect(0,0,WIDTH, HEIGHT))
-    for i in range(maxHp):
-        if(health > i):
-            WIN.blit(FULL_HEART, (WIDTH - (WIDTH / 15) * ((i + 1) * (0.9)) - WIDTH / 60, 0))
-        else:
-            WIN.blit(EMPTY_HEART, (WIDTH - (WIDTH / 15) * ((i + 1) * (0.9)) - WIDTH / 60, 0))
+    if(maxHp <= 14):
+        for i in range(maxHp):
+            if(health > i):
+                WIN.blit(FULL_HEART, (WIDTH - (WIDTH / 15) * ((i) * (0.9)) - WIDTH / 60 - FULL_HEART.get_width(), 0))
+            else:
+                WIN.blit(EMPTY_HEART, (WIDTH - (WIDTH / 15) * ((i) * (0.9)) - WIDTH / 60 - EMPTY_HEART.get_width(), 0))
+    else:
+        for i in range(maxHp):
+            if(health > i):
+                WIN.blit(FULL_HEART, (WIDTH - (WIDTH / 15) * ((i) * (0.3)) - WIDTH / 60 - FULL_HEART.get_width(), 0))
+            else:
+                WIN.blit(EMPTY_HEART, (WIDTH - (WIDTH / 15) * ((i) * (0.3)) - WIDTH / 60 - EMPTY_HEART.get_width(), 0))
+
 
     time_text = FONT.render(f"Time: {round(elapsed_time)}s", 1, "black")
     WIN.blit(time_text, (10, 10))
@@ -217,7 +225,7 @@ def upgradeScreen():
                     if(upgrade[i] % TOTAL_AMOUNT_OF_UPGRADES == 0):
                         splitUpgrade.append(f"({upgrade_stats[t]} => {upgrade_stats[t] + UPGRADE_STAT_AMOUNT[t] * rarity_increase[i]})")
                     elif(upgrade[i] % TOTAL_AMOUNT_OF_UPGRADES == 1):
-                        if(health + upgrade_stats[t] >= maxHp):
+                        if(health + UPGRADE_STAT_AMOUNT[t] >= maxHp):
                             splitUpgrade.append(f"({health} => {upgrade_stats[0]})")
                         else:
                             splitUpgrade.append(f"({upgrade_stats[t]} => {upgrade_stats[t] + UPGRADE_STAT_AMOUNT[t] * rarity_increase[i]})")
