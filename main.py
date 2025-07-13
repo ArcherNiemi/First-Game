@@ -2,6 +2,8 @@ import pygame
 import time
 import random
 import math
+from Upgrade import upgrade
+import Upgrade
 
 pygame.font.init()
 
@@ -253,34 +255,23 @@ def upgradeScreen():
                         run = False
     giveAbility(clickedAbility, number)
     
-def giveAbility(clickedAblility, rarity_increase):
+def giveAbility(clickedAbility, rarityIncrease):
+    global upgrade_stats
     global maxHp
     global health
     global shieldLength
     global shrinkLength
     global timeSlowLength
-    global upgrade_stats
-    if(clickedAblility == 0):
-        maxHp += UPGRADE_STAT_AMOUNT[0] * rarity_increase
-    if(clickedAblility == 1):
-        health += UPGRADE_STAT_AMOUNT[1] * rarity_increase
-        if(health > maxHp):
-            health = maxHp
-    if(clickedAblility == 2):
-        if(shieldLength == 0):
-            shieldLength = UPGRADE_STAT_AMOUNT[2] * 2
-        else:
-            shieldLength += UPGRADE_STAT_AMOUNT[2] * rarity_increase
-    if(clickedAblility == 3):
-        if(shrinkLength == 0):
-            shrinkLength = UPGRADE_STAT_AMOUNT[3] * 2
-        else:
-            shrinkLength += UPGRADE_STAT_AMOUNT[3] * rarity_increase
-    if(clickedAblility == 4):
-        if(timeSlowLength == 0):
-            timeSlowLength = UPGRADE_STAT_AMOUNT[4] * 2
-        else:
-            timeSlowLength += UPGRADE_STAT_AMOUNT[4] * rarity_increase
+    if(clickedAbility == 0):
+        maxHp += Upgrade.increaseHp(rarityIncrease)
+    elif(clickedAbility == 1):
+        health += Upgrade.healUp(rarityIncrease, maxHp, health)
+    elif(clickedAbility == 2):
+        shieldLength += Upgrade.shieldIncrease(rarityIncrease)
+    elif(clickedAbility == 3):
+        shrinkLength += Upgrade.shrinkIncrease(rarityIncrease)
+    elif(clickedAbility == 4):
+        timeSlowLength += Upgrade.timeSlowIncrease(rarityIncrease)
     upgrade_stats = [maxHp, health, shieldLength, shrinkLength, timeSlowLength]
 
 def resetScreen():
