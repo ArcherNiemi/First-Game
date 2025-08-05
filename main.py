@@ -19,8 +19,8 @@ ABILITY_SIZE = WIDTH / 20
 SLIME_WIDTH = 60
 SLIME_HEIGHT = 45
 
-STAR_WIDTH = 8
-STAR_HEIGHT = 30
+BULLET_WIDTH = 8
+BULLET_HEIGHT = 30
 
 BG = pygame.transform.scale(pygame.image.load("vecteezy_green-grass-field-with-blue-sky-ad-white-cloud-nature_40153656.jpg"), (WIDTH, HEIGHT))
 EMPTY_HEART = pygame.transform.scale(pygame.image.load("empty_heart.png"), (HEART_SIZE, HEART_SIZE))
@@ -30,7 +30,7 @@ FRAME = pygame.transform.scale(pygame.image.load("Square_Frame_PNG_Clipart.png")
 SHIELD_FULL = pygame.transform.scale(pygame.image.load("Blue_Force_Field_Full.png"), (ABILITY_SIZE, ABILITY_SIZE))
 CLOCK = pygame.transform.scale(pygame.image.load("Time Clock Black Icon - 1000x1000.png"), (ABILITY_SIZE, ABILITY_SIZE))
 SHRINK = pygame.transform.scale(pygame.image.load("resize-option.png"), (ABILITY_SIZE, ABILITY_SIZE))
-BULLET = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("bullets-png-22781(1).png"), (STAR_HEIGHT + 10, STAR_WIDTH + 2)), -90)
+BULLET = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("bullets-png-22781(1).png"), (BULLET_HEIGHT + 10, BULLET_WIDTH + 2)), -90)
 slime_left = pygame.transform.scale(pygame.image.load("Slime_Left.png"), (SLIME_WIDTH, SLIME_HEIGHT))
 slime_right = pygame.transform.scale(pygame.image.load("Slime_Right.png"), (SLIME_WIDTH, SLIME_HEIGHT))
 
@@ -39,7 +39,7 @@ PLAYER_HEIGHT = 35
 PLAYER_VELOCITY = 8
 PLAYER_STARTING_HEALTH = 3
 
-STAR_VELOCITY = 8
+BULLET_VELOCITY = 8
 
 FONT = pygame.font.SysFont("arial", 30)
 FONT_START = pygame.font.SysFont("arial", 60)
@@ -50,8 +50,8 @@ FONT_BUTTONS = pygame.font.SysFont("arial", 40)
 FONT_TITLE = pygame.font.SysFont("arial", 80)
 FONT_RESTART = pygame.font.SysFont("arial", 80)
 
-START_DELAY_BETWEEN_STARS = 2000
-START_AMOUNT_OF_STARS_PER_WAVE = 5
+START_DELAY_BETWEEN_BULLETS = 2000
+START_AMOUNT_OF_BULLETS_PER_WAVE = 5
 START_LENGTH_OF_ROUNDS = 5
 
 UPGRADE_LIST = ["Hp Increase", "Heal", "Shield", "Shrink", "Time Slow"]
@@ -70,21 +70,18 @@ COOL_DOWN = 5
 
 health = PLAYER_STARTING_HEALTH
 maxHp = PLAYER_STARTING_HEALTH
-shieldLength = 0
-shrinkLength = 0
-timeSlowLength = 0
 running = True
 
-upgrade_stats = [maxHp, health, shieldLength, shrinkLength, timeSlowLength]
+upgrade_stats = [maxHp, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration]
 UPGRADE_STAT_AMOUNT = [1, 3, 0.25, 0.5, 0.75]
 
 currentDirection = slime_left
 
 
-def draw(player, elapsed_time, stars, shield, shrink, timeSlow, level, currentShieldCoolDown, currentShrinkCoolDown, currentTimeSlowCoolDown, shrink_time, shield_time, timeSlow_time):
+def draw(player, elapsed_time, bullets, shield, shrink, timeSlow, level, currentShieldCoolDown, currentShrinkCoolDown, currentTimeSlowCoolDown, shrink_time, shield_time, timeSlow_time):
     pygame.draw.rect(WIN, "red", player)
-    for star in stars:
-        pygame.draw.rect(WIN, "black", star[0])
+    for bullet in bullets:
+        pygame.draw.rect(WIN, "black", bullet[0])
     WIN.blit(BG, (0, 0))
     if(timeSlow):
         draw_rect_alpha(WIN, pygame.Color(128, 0, 128, 90), pygame.Rect(0,0,WIDTH, HEIGHT))
@@ -110,26 +107,26 @@ def draw(player, elapsed_time, stars, shield, shrink, timeSlow, level, currentSh
     WIN.blit(SHRINK, (10, 25 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE))
     WIN.blit(CLOCK, (10, 30 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * 2))
 
-    if(shieldLength <= 0):
+    if(Upgrade.shield.duration <= 0):
         draw_rect_alpha(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height(), ABILITY_SIZE, ABILITY_SIZE))
     elif(currentShieldCoolDown > 0):
         draw_transparent_arc(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height(), ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * currentShieldCoolDown)/ COOL_DOWN)
     elif(shield):
-        draw_transparent_arc(WIN, pygame.Color(0, 255, 0, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height(), ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * (shield_time - elapsed_time + shieldLength))/shieldLength)
+        draw_transparent_arc(WIN, pygame.Color(0, 255, 0, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height(), ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * (shield_time - elapsed_time + Upgrade.shield.duration))/Upgrade.shield.duration)
     
-    if(shrinkLength <= 0):
+    if(Upgrade.shrink.duration <= 0):
         draw_rect_alpha(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 25 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE, ABILITY_SIZE, ABILITY_SIZE))
     elif(currentShrinkCoolDown > 0):
         draw_transparent_arc(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 25 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * currentShrinkCoolDown)/ COOL_DOWN)
     elif(shrink):
-        draw_transparent_arc(WIN, pygame.Color(0, 255, 0, 128), pygame.Rect(10, 25 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * (shrink_time - elapsed_time + shrinkLength))/ shrinkLength)
+        draw_transparent_arc(WIN, pygame.Color(0, 255, 0, 128), pygame.Rect(10, 25 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * (shrink_time - elapsed_time + Upgrade.shrink.duration))/ Upgrade.shrink.duration)
     
-    if(timeSlowLength <= 0):
+    if(Upgrade.timeSlow.duration <= 0):
         draw_rect_alpha(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 30 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * 2, ABILITY_SIZE, ABILITY_SIZE))
     elif(currentTimeSlowCoolDown > 0):
         draw_transparent_arc(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 30 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * 2, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * currentTimeSlowCoolDown)/ COOL_DOWN)
     elif(timeSlow):
-        draw_transparent_arc(WIN, pygame.Color(0, 255, 0, 128), pygame.Rect(10, 30 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * 2, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * (timeSlow_time - time.time() + timeSlowLength))/ timeSlowLength)
+        draw_transparent_arc(WIN, pygame.Color(0, 255, 0, 128), pygame.Rect(10, 30 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * 2, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * (timeSlow_time - time.time() + Upgrade.timeSlow.duration))/ Upgrade.timeSlow.duration)
     if(shrink):
         WIN.blit(currentDirection, (player.x - 5 / SHRINK_SIZE, player.y - 5 / SHRINK_SIZE))
     else:
@@ -138,8 +135,8 @@ def draw(player, elapsed_time, stars, shield, shrink, timeSlow, level, currentSh
     if(shield):
         WIN.blit(SHIELD, (player.x + player.width / 2 - SHIELD.get_width() / 2, HEIGHT - SHIELD.get_height()))
 
-    for star in stars:
-        WIN.blit(BULLET, (star[0].x, star[0].y))
+    for bullet in bullets:
+        WIN.blit(BULLET, (bullet[0].x, bullet[0].y))
 
     pygame.display.update()
 
@@ -258,21 +255,18 @@ def upgradeScreen():
 def giveAbility(clickedAbility, rarityIncrease):
     global upgrade_stats
     global maxHp
-    global health
-    global shieldLength
-    global shrinkLength
-    global timeSlowLength
+    global health 
     if(clickedAbility == 0):
         maxHp += Upgrade.increaseHp(rarityIncrease)
     elif(clickedAbility == 1):
         health += Upgrade.healUp(rarityIncrease, maxHp, health)
     elif(clickedAbility == 2):
-        shieldLength += Upgrade.shieldIncrease(rarityIncrease)
+        Upgrade.shield.duration += Upgrade.shieldIncrease(rarityIncrease)
     elif(clickedAbility == 3):
-        shrinkLength += Upgrade.shrinkIncrease(rarityIncrease)
+        Upgrade.shrink.duration += Upgrade.shrinkIncrease(rarityIncrease)
     elif(clickedAbility == 4):
-        timeSlowLength += Upgrade.timeSlowIncrease(rarityIncrease)
-    upgrade_stats = [maxHp, health, shieldLength, shrinkLength, timeSlowLength]
+        Upgrade.timeSlow.duration += Upgrade.timeSlowIncrease(rarityIncrease)
+    upgrade_stats = [maxHp, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration]
 
 def resetScreen():
     background = pygame.Rect(0, 0, WIDTH, HEIGHT)
@@ -300,16 +294,13 @@ def resetScreen():
 def reset():
     global health
     global maxHp
-    global shieldLength
-    global shrinkLength
-    global timeSlowLength
     global upgrade_stats
     health = PLAYER_STARTING_HEALTH
     maxHp = PLAYER_STARTING_HEALTH
-    shieldLength = 0
-    shrinkLength = 0
-    timeSlowLength = 0
-    upgrade_stats = [maxHp, health, shieldLength, shrinkLength, timeSlowLength]
+    Upgrade.shield.duration = 0
+    Upgrade.shrink.duration = 0
+    Upgrade.timeSlow.duration = 0
+    upgrade_stats = [maxHp, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration]
     print("Reset")
 
 def main():
@@ -343,10 +334,10 @@ def run(level):
     start_time = time.time()
     elapsed_time = 0
 
-    star_add_increment = 2000
-    star_count = 0
+    bullet_add_increment = 2000
+    bullet_count = 0
     
-    stars = []
+    bullets = []
     hit = False
     dead = False
 
@@ -374,21 +365,21 @@ def run(level):
 
     while run:
         if(timeSlow):
-            star_count += clock.tick(60 / TIME_SLOW_AMOUNT)
+            bullet_count += clock.tick(60 / TIME_SLOW_AMOUNT)
         else:
-            star_count += clock.tick(60)
+            bullet_count += clock.tick(60)
         elapsed_time = time.time() - start_time - amountOfTimeSlow
         if(timeSlow):
             amountOfTimeSlow = (time.time() - timeSlow_time) / 2 + totalAmountOfTimeSlow
         else:
             totalAmountOfTimeSlow = amountOfTimeSlow
 
-        if(shield and elapsed_time - shield_time >= shieldLength):
+        if(shield and elapsed_time - shield_time >= Upgrade.shield.duration):
             shield = False
             startShieldCoolDown = elapsed_time
         else:
             currentShieldCoolDown = startShieldCoolDown - elapsed_time + COOL_DOWN
-        if(shrink and elapsed_time - shrink_time >= shrinkLength):
+        if(shrink and elapsed_time - shrink_time >= Upgrade.shrink.duration):
             shrink = False
             player.x -= player.width / 2
             player.width *= SHRINK_SIZE
@@ -406,28 +397,28 @@ def run(level):
             startShrinkCoolDown = elapsed_time
         else:
             currentShrinkCoolDown = startShrinkCoolDown - elapsed_time + COOL_DOWN
-        if(timeSlow and time.time() - timeSlow_time >= timeSlowLength):
+        if(timeSlow and time.time() - timeSlow_time >= Upgrade.timeSlow.duration):
             timeSlow = False
             startTimeSlowCoolDown = time.time()
         else:
             currentTimeSlowCoolDown = startTimeSlowCoolDown - time.time() + COOL_DOWN
         if(timeSlow):
-            star_add_increment = int(round(random.randint(int(round(START_DELAY_BETWEEN_STARS / difficulty) / 3), int(round(START_DELAY_BETWEEN_STARS / difficulty))) * TIME_SLOW_AMOUNT))
+            bullet_add_increment = int(round(random.randint(int(round(START_DELAY_BETWEEN_BULLETS / difficulty) / 3), int(round(START_DELAY_BETWEEN_BULLETS / difficulty))) * TIME_SLOW_AMOUNT))
         else:
-            star_add_increment = random.randint(int(round(START_DELAY_BETWEEN_STARS / difficulty) / 3), int(round(START_DELAY_BETWEEN_STARS / difficulty)))
+            bullet_add_increment = random.randint(int(round(START_DELAY_BETWEEN_BULLETS / difficulty) / 3), int(round(START_DELAY_BETWEEN_BULLETS / difficulty)))
 
 
         if(elapsed_time < START_LENGTH_OF_ROUNDS * difficulty):
-            if star_count > star_add_increment:
-                for _ in range(random.randint(int(round(START_AMOUNT_OF_STARS_PER_WAVE * difficulty)/2), int(round(START_AMOUNT_OF_STARS_PER_WAVE * difficulty)))):
-                    star_x = random.randint(0, WIDTH - STAR_WIDTH)
-                    star = [pygame.Rect(star_x, -STAR_HEIGHT, STAR_WIDTH, STAR_HEIGHT), random.randint(STAR_VELOCITY - 1, STAR_VELOCITY + 1)]
-                    stars.append(star)
+            if bullet_count > bullet_add_increment:
+                for _ in range(random.randint(int(round(START_AMOUNT_OF_BULLETS_PER_WAVE * difficulty)/2), int(round(START_AMOUNT_OF_BULLETS_PER_WAVE * difficulty)))):
+                    bullet_x = random.randint(0, WIDTH - BULLET_WIDTH)
+                    bullet = [pygame.Rect(bullet_x, -BULLET_HEIGHT, BULLET_WIDTH, BULLET_HEIGHT), random.randint(BULLET_VELOCITY - 1, BULLET_VELOCITY + 1)]
+                    bullets.append(bullet)
                 
-                star_add_increment = max(200, star_add_increment - 50)
-                star_count = 0
+                bullet_add_increment = max(200, bullet_add_increment - 50)
+                bullet_count = 0
         
-        elif(len(stars) <= 0):
+        elif(len(bullets) <= 0):
             break
             
         for event in pygame.event.get():
@@ -437,10 +428,10 @@ def run(level):
                 break
         
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_1] and currentShieldCoolDown <= 0 and not(shield) and shieldLength > 0:
+        if keys[pygame.K_1] and currentShieldCoolDown <= 0 and not(shield) and Upgrade.shield.duration > 0:
             shield = True
             shield_time = elapsed_time
-        if keys[pygame.K_2] and currentShrinkCoolDown <= 0 and not(shrink) and shrinkLength > 0:
+        if keys[pygame.K_2] and currentShrinkCoolDown <= 0 and not(shrink) and Upgrade.shrink.duration > 0:
             shrink = True
             shrink_time = elapsed_time
             player.width /= SHRINK_SIZE
@@ -457,7 +448,7 @@ def run(level):
             player.y = HEIGHT - player.height
             player.x += player.width / 2
             currentPlayerVelocity /= SHRINK_SIZE
-        if keys[pygame.K_3] and currentTimeSlowCoolDown <= 0 and not(timeSlow) and timeSlowLength > 0:
+        if keys[pygame.K_3] and currentTimeSlowCoolDown <= 0 and not(timeSlow) and Upgrade.timeSlow.duration > 0:
             timeSlow = True
             timeSlow_time = time.time()
         if keys[pygame.K_LEFT] and player.x - currentPlayerVelocity >= 0:
@@ -467,12 +458,12 @@ def run(level):
             player.x += currentPlayerVelocity
             currentDirection = slime_right
 
-        for star in stars[:]:
-            star[0].y += star[1]
-            if star[0].y > HEIGHT:
-                stars.remove(star)
-            elif star[0].y + star[0].height >= player.y and star[0].colliderect(player):
-                stars.remove(star)
+        for bullet in bullets[:]:
+            bullet[0].y += bullet[1]
+            if bullet[0].y > HEIGHT:
+                bullets.remove(bullet)
+            elif bullet[0].y + bullet[0].height >= player.y and bullet[0].colliderect(player):
+                bullets.remove(bullet)
                 if(not(shield)):
                     hit = True
                 break
@@ -484,7 +475,7 @@ def run(level):
             if(health <= 0):
                 dead = True
 
-        draw(player, elapsed_time, stars, shield, shrink, timeSlow, level, currentShieldCoolDown, currentShrinkCoolDown, currentTimeSlowCoolDown, shrink_time, shield_time, timeSlow_time)
+        draw(player, elapsed_time, bullets, shield, shrink, timeSlow, level, currentShieldCoolDown, currentShrinkCoolDown, currentTimeSlowCoolDown, shrink_time, shield_time, timeSlow_time)
 
         if dead:
             lost_text = FONT_END.render("You Lost", 1, "black")
