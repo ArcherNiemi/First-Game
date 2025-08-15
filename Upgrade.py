@@ -7,9 +7,6 @@ SHIELD_COOLDOWN = 5
 SHRINK_COOLDOWN = 5
 TIME_SLOW_COOLDOWN = 5
 
-
-
-
 class Upgrade:
     def __init__(self, type: str, rarity: str, amountIncrease: float, amount: float, coolDown: float):
         self.rarity = rarity

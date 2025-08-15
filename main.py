@@ -4,6 +4,7 @@ import random
 import math
 from Upgrade import upgrade
 import Upgrade
+import Bullet
 
 pygame.font.init()
 
@@ -81,7 +82,7 @@ currentDirection = slime_left
 def draw(player, elapsed_time, bullets, shield, shrink, timeSlow, level, currentShieldCoolDown, currentShrinkCoolDown, currentTimeSlowCoolDown, shrink_time, shield_time, timeSlow_time):
     pygame.draw.rect(WIN, "red", player)
     for bullet in bullets:
-        pygame.draw.rect(WIN, "black", bullet[0])
+        pygame.draw.rect(WIN, "black", bullet.hitBox)
     WIN.blit(BG, (0, 0))
     if(timeSlow):
         draw_rect_alpha(WIN, pygame.Color(128, 0, 128, 90), pygame.Rect(0,0,WIDTH, HEIGHT))
@@ -136,7 +137,7 @@ def draw(player, elapsed_time, bullets, shield, shrink, timeSlow, level, current
         WIN.blit(SHIELD, (player.x + player.width / 2 - SHIELD.get_width() / 2, HEIGHT - SHIELD.get_height()))
 
     for bullet in bullets:
-        WIN.blit(BULLET, (bullet[0].x, bullet[0].y))
+        WIN.blit(BULLET, (bullet.hitBox.x, bullet.hitBox.y))
 
     pygame.display.update()
 
@@ -412,7 +413,7 @@ def run(level):
             if bullet_count > bullet_add_increment:
                 for _ in range(random.randint(int(round(START_AMOUNT_OF_BULLETS_PER_WAVE * difficulty)/2), int(round(START_AMOUNT_OF_BULLETS_PER_WAVE * difficulty)))):
                     bullet_x = random.randint(0, WIDTH - BULLET_WIDTH)
-                    bullet = [pygame.Rect(bullet_x, -BULLET_HEIGHT, BULLET_WIDTH, BULLET_HEIGHT), random.randint(BULLET_VELOCITY - 1, BULLET_VELOCITY + 1)]
+                    bullet = Bullet.Bullet(random.randint(BULLET_VELOCITY - 1, BULLET_VELOCITY + 1), "normal", pygame.Rect(bullet_x, -BULLET_HEIGHT, BULLET_WIDTH, BULLET_HEIGHT))
                     bullets.append(bullet)
                 
                 bullet_add_increment = max(200, bullet_add_increment - 50)
@@ -459,10 +460,10 @@ def run(level):
             currentDirection = slime_right
 
         for bullet in bullets[:]:
-            bullet[0].y += bullet[1]
-            if bullet[0].y > HEIGHT:
+            bullet.hitBox.y += bullet.speed
+            if bullet.hitBox.y > HEIGHT:
                 bullets.remove(bullet)
-            elif bullet[0].y + bullet[0].height >= player.y and bullet[0].colliderect(player):
+            elif bullet.hitBox.y + bullet.hitBox.height >= player.y and bullet.hitBox.colliderect(player):
                 bullets.remove(bullet)
                 if(not(shield)):
                     hit = True
