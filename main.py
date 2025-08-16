@@ -32,6 +32,7 @@ SHIELD_FULL = pygame.transform.scale(pygame.image.load("Blue_Force_Field_Full.pn
 CLOCK = pygame.transform.scale(pygame.image.load("Time Clock Black Icon - 1000x1000.png"), (ABILITY_SIZE, ABILITY_SIZE))
 SHRINK = pygame.transform.scale(pygame.image.load("resize-option.png"), (ABILITY_SIZE, ABILITY_SIZE))
 BULLET = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("bullets-png-22781(1).png"), (BULLET_HEIGHT + 10, BULLET_WIDTH + 2)), -90)
+SPEED_BULLET = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("speed_bullet.png"), (BULLET_HEIGHT + 10, BULLET_WIDTH + 2)), -90)
 slime_left = pygame.transform.scale(pygame.image.load("Slime_Left.png"), (SLIME_WIDTH, SLIME_HEIGHT))
 slime_right = pygame.transform.scale(pygame.image.load("Slime_Right.png"), (SLIME_WIDTH, SLIME_HEIGHT))
 
@@ -69,12 +70,22 @@ TOTAL_AMOUNT_OF_UPGRADES = 5
 
 COOL_DOWN = 5
 
+SPEED_BULLET_START_ROUND = 5
+EXPLODING_BULLET_START_ROUND = 10
+HOMING_BULLET_START_ROUND = 15
+
+SPECIAL_BULLET_LEVEL_SCALING = 2
+
+SPECIAL_BULLET_STARTING_AMOUNT = 10
+
 health = PLAYER_STARTING_HEALTH
 maxHp = PLAYER_STARTING_HEALTH
 running = True
 
 upgrade_stats = [maxHp, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration]
 UPGRADE_STAT_AMOUNT = [1, 3, 0.25, 0.5, 0.75]
+
+SPEED_AMOUNT = 2
 
 currentDirection = slime_left
 
@@ -137,7 +148,10 @@ def draw(player, elapsed_time, bullets, shield, shrink, timeSlow, level, current
         WIN.blit(SHIELD, (player.x + player.width / 2 - SHIELD.get_width() / 2, HEIGHT - SHIELD.get_height()))
 
     for bullet in bullets:
-        WIN.blit(BULLET, (bullet.hitBox.x, bullet.hitBox.y))
+        if(bullet.type == "speed"):
+            WIN.blit(SPEED_BULLET, (bullet.hitBox.x, bullet.hitBox.y))
+        else:
+            WIN.blit(BULLET, (bullet.hitBox.x, bullet.hitBox.y))
 
     pygame.display.update()
 
@@ -304,6 +318,24 @@ def reset():
     upgrade_stats = [maxHp, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration]
     print("Reset")
 
+def chooseType(level):
+    randomInt = random.randint(1,100)
+    if(level >= SPEED_BULLET_START_ROUND):
+        if(probabilityFinder(randomInt, level - SPEED_BULLET_START_ROUND)):
+            return "speed"
+        else:
+            return "normal"
+    return "normal"
+    # if(level >= EXPLODING_BULLET_START_ROUND and level < HOMING_BULLET_START_ROUND):
+    #     if(randomInt >= 100 - (SPECIAL_BULLET_STARTING_AMOUNT + (SPECIAL_BULLET_LEVEL_SCALING * (level - SPEED_BULLET_START_ROUND)))):
+    #         return "homing"
+    #     else:
+    #         return "normal"
+
+def probabilityFinder(randomInt, amountAfterStartingLevel):
+    return randomInt > 100 - (SPECIAL_BULLET_STARTING_AMOUNT + (SPECIAL_BULLET_LEVEL_SCALING * amountAfterStartingLevel))
+
+
 def main():
     global running
     startScreen()
@@ -413,7 +445,13 @@ def run(level):
             if bullet_count > bullet_add_increment:
                 for _ in range(random.randint(int(round(START_AMOUNT_OF_BULLETS_PER_WAVE * difficulty)/2), int(round(START_AMOUNT_OF_BULLETS_PER_WAVE * difficulty)))):
                     bullet_x = random.randint(0, WIDTH - BULLET_WIDTH)
-                    bullet = Bullet.Bullet(random.randint(BULLET_VELOCITY - 1, BULLET_VELOCITY + 1), "normal", pygame.Rect(bullet_x, -BULLET_HEIGHT, BULLET_WIDTH, BULLET_HEIGHT))
+                    bullet_type = chooseType(level)
+                    print(bullet_type)
+                    if(bullet_type == "speed"):
+                        bullet_speed = random.randint((BULLET_VELOCITY - 1) * SPEED_AMOUNT, (BULLET_VELOCITY + 1) * SPEED_AMOUNT)
+                    else:
+                        bullet_speed = random.randint(BULLET_VELOCITY - 1, BULLET_VELOCITY + 1)
+                    bullet = Bullet.Bullet(bullet_speed, bullet_type, pygame.Rect(bullet_x, -BULLET_HEIGHT, BULLET_WIDTH, BULLET_HEIGHT))
                     bullets.append(bullet)
                 
                 bullet_add_increment = max(200, bullet_add_increment - 50)
