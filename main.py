@@ -358,7 +358,7 @@ def main():
     global running
     startScreen()
     while(True):
-        level = 10
+        level = 1
         running = True
         while(running):
             levelStart(level)
@@ -366,7 +366,7 @@ def main():
             if(running):
                 levelEnd(level)
                 upgradeScreen()
-            level = 15
+            level += 1
         resetScreen()
 
 def run(level):
@@ -394,7 +394,7 @@ def run(level):
 
     explosions = []
 
-    difficulty = 1 #1 + level / 10
+    difficulty = 1 + level / 10
 
     currentShieldCoolDown = 0
     currentShrinkCoolDown = 0
@@ -461,7 +461,7 @@ def run(level):
             bullet_add_increment = random.randint(int(round(START_DELAY_BETWEEN_BULLETS / difficulty) / 3), int(round(START_DELAY_BETWEEN_BULLETS / difficulty)))
 
 
-        if(elapsed_time < START_LENGTH_OF_ROUNDS * difficulty * 10):
+        if(elapsed_time < START_LENGTH_OF_ROUNDS * difficulty):
             if bullet_count > bullet_add_increment:
                 for _ in range(random.randint(int(round(START_AMOUNT_OF_BULLETS_PER_WAVE * difficulty)/2), int(round(START_AMOUNT_OF_BULLETS_PER_WAVE * difficulty)))):
                     bullet_x = random.randint(0, WIDTH - BULLET_WIDTH)
