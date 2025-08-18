@@ -5,3 +5,6 @@ class Bullet:
         self.speed = speed
         self.type = type
         self.hitBox = hitBox
+        if(type == "homing"):
+            self.angle = 0
+            self.previousAngle = 0

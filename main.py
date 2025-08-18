@@ -6,6 +6,7 @@ from Upgrade import upgrade
 import Upgrade
 import Bullet
 import Explosion
+import math
 
 pygame.font.init()
 
@@ -45,7 +46,7 @@ slime_right = pygame.transform.scale(pygame.image.load("Slime_Right.png"), (SLIM
 PLAYER_WIDTH = 50
 PLAYER_HEIGHT = 35
 PLAYER_VELOCITY = 8
-PLAYER_STARTING_HEALTH = 3
+PLAYER_STARTING_HEALTH = 300
 
 BULLET_VELOCITY = 8
 
@@ -87,6 +88,9 @@ SPECIAL_BULLET_LEVEL_SCALING = 2
 SPECIAL_BULLET_STARTING_AMOUNT = 10
 
 EXPLOSION_TIME = 0.5
+
+MAX_HOMING = 1
+HOMING_DEDUCTION = 5
 
 health = PLAYER_STARTING_HEALTH
 maxHp = PLAYER_STARTING_HEALTH
@@ -161,7 +165,7 @@ def draw(player, elapsed_time, bullets, explosions, shield, shrink, timeSlow, le
 
     for bullet in bullets:
         if(bullet.type == "homing"):
-            WIN.blit(HOMING_BULLET, (bullet.hitBox.x, bullet.hitBox.y))
+            WIN.blit(pygame.transform.rotate(pygame.image.load("homing_bullet.png"), bullet.angle - 90), (bullet.hitBox.x, bullet.hitBox.y))
         elif(bullet.type == "exploding"):
             WIN.blit(EXPLODING_BULLET, (bullet.hitBox.x, bullet.hitBox.y))
         elif(bullet.type == "speed"):
@@ -354,11 +358,23 @@ def chooseType(level):
             return "speed"
     return "normal"
 
+def findAngle(player, bullet):
+    differenceInX = (player.x + PLAYER_WIDTH / 2) - (bullet.hitBox.x + BULLET_WIDTH / 2)
+    differenceInY = (player.y + PLAYER_HEIGHT / 2) - (bullet.hitBox.y + BULLET_HEIGHT / 2)
+    angle = math.tan(differenceInX / differenceInY)
+    turnAngle = angle / HOMING_DEDUCTION
+    if(turnAngle <= MAX_HOMING):
+        return turnAngle
+    else:
+        return MAX_HOMING
+
+
+
 def main():
     global running
     startScreen()
     while(True):
-        level = 1
+        level = 15
         running = True
         while(running):
             levelStart(level)
@@ -517,7 +533,16 @@ def run(level):
             currentDirection = slime_right
 
         for bullet in bullets[:]:
-            bullet.hitBox.y += bullet.speed
+            if(bullet.type == "homing"):
+                bullet.previousAngle = bullet.angle
+                angle = findAngle(player, bullet)
+                bullet.angle += angle
+                amountInX = round(bullet.speed * math.sin(angle))
+                amountInY = round(bullet.speed * math.cos(angle))
+                bullet.hitBox.x += amountInX
+                bullet.hitBox.y += amountInY
+            else:
+                bullet.hitBox.y += bullet.speed
             if bullet.hitBox.y > HEIGHT:
                 if(bullet.type == "exploding"):
                     explosion = Explosion.Explosion(elapsed_time, False, pygame.Rect(bullet.hitBox.x - EXPLOSION_SIZE / 2, bullet.hitBox.y - EXPLOSION_SIZE, EXPLOSION_SIZE, EXPLOSION_SIZE))
