@@ -261,7 +261,7 @@ def upgradeScreen():
                         if(health + UPGRADE_STAT_AMOUNT[t] * rarity_increase[i] >= maxHp):
                             splitUpgrade.append(f"({health} => {upgrade_stats[0]})")
                         else:
-                            splitUpgrade.append(f"({upgrade_stats[t]} => {upgrade_stats[t] + UPGRADE_STAT_AMOUNT[t] * rarity_increase[i]})")
+                            splitUpgrade.append(f"({health} => {health + UPGRADE_STAT_AMOUNT[t] * rarity_increase[i]})")
                     else:
                         splitUpgrade.append(f"({upgrade_stats[t]}s => {upgrade_stats[t] + UPGRADE_STAT_AMOUNT[t] * rarity_increase[i]}s)")
                     for p in range(len(splitUpgrade)):
