@@ -45,7 +45,7 @@ slime_right = pygame.transform.scale(pygame.image.load("Slime_Right.png"), (SLIM
 PLAYER_WIDTH = 50
 PLAYER_HEIGHT = 35
 PLAYER_VELOCITY = 8
-PLAYER_STARTING_HEALTH = 30
+PLAYER_STARTING_HEALTH = 3
 
 BULLET_VELOCITY = 8
 
