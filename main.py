@@ -5,6 +5,7 @@ import math
 from Upgrade import upgrade
 import Upgrade
 import Bullet
+import Explosion
 
 pygame.font.init()
 
@@ -23,6 +24,8 @@ SLIME_HEIGHT = 45
 BULLET_WIDTH = 8
 BULLET_HEIGHT = 30
 
+EXPLOSION_SIZE = 30
+
 BG = pygame.transform.scale(pygame.image.load("vecteezy_green-grass-field-with-blue-sky-ad-white-cloud-nature_40153656.jpg"), (WIDTH, HEIGHT))
 EMPTY_HEART = pygame.transform.scale(pygame.image.load("empty_heart.png"), (HEART_SIZE, HEART_SIZE))
 FULL_HEART = pygame.transform.scale(pygame.image.load("full_heart.png"), (HEART_SIZE, HEART_SIZE))
@@ -33,13 +36,16 @@ CLOCK = pygame.transform.scale(pygame.image.load("Time Clock Black Icon - 1000x1
 SHRINK = pygame.transform.scale(pygame.image.load("resize-option.png"), (ABILITY_SIZE, ABILITY_SIZE))
 BULLET = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("bullets-png-22781(1).png"), (BULLET_HEIGHT + 10, BULLET_WIDTH + 2)), -90)
 SPEED_BULLET = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("speed_bullet.png"), (BULLET_HEIGHT + 10, BULLET_WIDTH + 2)), -90)
+EXPLODING_BULLET = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("exploding_bullet.png"), (BULLET_HEIGHT + 10, BULLET_WIDTH + 2)), -90)
+HOMING_BULLET = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("homing_bullet.png"), (BULLET_HEIGHT + 10, BULLET_WIDTH + 2)), -90)
+EXPLOSION = pygame.transform.scale(pygame.image.load("NicePng_light-effect-png_43400.png"), (EXPLOSION_SIZE * 2, EXPLOSION_SIZE * 2))
 slime_left = pygame.transform.scale(pygame.image.load("Slime_Left.png"), (SLIME_WIDTH, SLIME_HEIGHT))
 slime_right = pygame.transform.scale(pygame.image.load("Slime_Right.png"), (SLIME_WIDTH, SLIME_HEIGHT))
 
 PLAYER_WIDTH = 50
 PLAYER_HEIGHT = 35
 PLAYER_VELOCITY = 8
-PLAYER_STARTING_HEALTH = 3
+PLAYER_STARTING_HEALTH = 30
 
 BULLET_VELOCITY = 8
 
@@ -73,10 +79,14 @@ COOL_DOWN = 5
 SPEED_BULLET_START_ROUND = 5
 EXPLODING_BULLET_START_ROUND = 10
 HOMING_BULLET_START_ROUND = 15
+COMBO_BULLET_START_ROUND = 20
+SUPER_BULLET_START_ROUND = 25
 
 SPECIAL_BULLET_LEVEL_SCALING = 2
 
 SPECIAL_BULLET_STARTING_AMOUNT = 10
+
+EXPLOSION_TIME = 0.5
 
 health = PLAYER_STARTING_HEALTH
 maxHp = PLAYER_STARTING_HEALTH
@@ -90,10 +100,12 @@ SPEED_AMOUNT = 2
 currentDirection = slime_left
 
 
-def draw(player, elapsed_time, bullets, shield, shrink, timeSlow, level, currentShieldCoolDown, currentShrinkCoolDown, currentTimeSlowCoolDown, shrink_time, shield_time, timeSlow_time):
+def draw(player, elapsed_time, bullets, explosions, shield, shrink, timeSlow, level, currentShieldCoolDown, currentShrinkCoolDown, currentTimeSlowCoolDown, shrink_time, shield_time, timeSlow_time):
     pygame.draw.rect(WIN, "red", player)
     for bullet in bullets:
         pygame.draw.rect(WIN, "black", bullet.hitBox)
+    for explosion in explosions:
+        pygame.draw.rect(WIN, "red", explosion.hitBox)
     WIN.blit(BG, (0, 0))
     if(timeSlow):
         draw_rect_alpha(WIN, pygame.Color(128, 0, 128, 90), pygame.Rect(0,0,WIDTH, HEIGHT))
@@ -148,10 +160,17 @@ def draw(player, elapsed_time, bullets, shield, shrink, timeSlow, level, current
         WIN.blit(SHIELD, (player.x + player.width / 2 - SHIELD.get_width() / 2, HEIGHT - SHIELD.get_height()))
 
     for bullet in bullets:
-        if(bullet.type == "speed"):
+        if(bullet.type == "homing"):
+            WIN.blit(HOMING_BULLET, (bullet.hitBox.x, bullet.hitBox.y))
+        elif(bullet.type == "exploding"):
+            WIN.blit(EXPLODING_BULLET, (bullet.hitBox.x, bullet.hitBox.y))
+        elif(bullet.type == "speed"):
             WIN.blit(SPEED_BULLET, (bullet.hitBox.x, bullet.hitBox.y))
         else:
             WIN.blit(BULLET, (bullet.hitBox.x, bullet.hitBox.y))
+
+    for explosion in explosions:
+        WIN.blit(EXPLOSION, (explosion.hitBox.x - EXPLOSION_SIZE / 2, explosion.hitBox.y - EXPLOSION_SIZE / 2))
 
     pygame.display.update()
 
@@ -239,7 +258,7 @@ def upgradeScreen():
                     if(upgrade[i] % TOTAL_AMOUNT_OF_UPGRADES == 0):
                         splitUpgrade.append(f"({upgrade_stats[t]} => {upgrade_stats[t] + UPGRADE_STAT_AMOUNT[t] * rarity_increase[i]})")
                     elif(upgrade[i] % TOTAL_AMOUNT_OF_UPGRADES == 1):
-                        if(health + UPGRADE_STAT_AMOUNT[t] >= maxHp):
+                        if(health + UPGRADE_STAT_AMOUNT[t] * rarity_increase[i] >= maxHp):
                             splitUpgrade.append(f"({health} => {upgrade_stats[0]})")
                         else:
                             splitUpgrade.append(f"({upgrade_stats[t]} => {upgrade_stats[t] + UPGRADE_STAT_AMOUNT[t] * rarity_increase[i]})")
@@ -320,27 +339,26 @@ def reset():
 
 def chooseType(level):
     randomInt = random.randint(1,100)
+    totalBulletTypeAmount = 0
+    if(level >= HOMING_BULLET_START_ROUND):
+        totalBulletTypeAmount += SPECIAL_BULLET_STARTING_AMOUNT + (SPECIAL_BULLET_LEVEL_SCALING * (level - HOMING_BULLET_START_ROUND))
+        if(randomInt > 100 - (totalBulletTypeAmount)):
+            return "homing"
+    if(level >= EXPLODING_BULLET_START_ROUND):
+        totalBulletTypeAmount += SPECIAL_BULLET_STARTING_AMOUNT + (SPECIAL_BULLET_LEVEL_SCALING * (level - EXPLODING_BULLET_START_ROUND))
+        if(randomInt > 100 - (totalBulletTypeAmount)):
+            return "exploding"
     if(level >= SPEED_BULLET_START_ROUND):
-        if(probabilityFinder(randomInt, level - SPEED_BULLET_START_ROUND)):
+        totalBulletTypeAmount += SPECIAL_BULLET_STARTING_AMOUNT + (SPECIAL_BULLET_LEVEL_SCALING * (level - SPEED_BULLET_START_ROUND))
+        if(randomInt > 100 - (totalBulletTypeAmount)):
             return "speed"
-        else:
-            return "normal"
     return "normal"
-    # if(level >= EXPLODING_BULLET_START_ROUND and level < HOMING_BULLET_START_ROUND):
-    #     if(randomInt >= 100 - (SPECIAL_BULLET_STARTING_AMOUNT + (SPECIAL_BULLET_LEVEL_SCALING * (level - SPEED_BULLET_START_ROUND)))):
-    #         return "homing"
-    #     else:
-    #         return "normal"
-
-def probabilityFinder(randomInt, amountAfterStartingLevel):
-    return randomInt > 100 - (SPECIAL_BULLET_STARTING_AMOUNT + (SPECIAL_BULLET_LEVEL_SCALING * amountAfterStartingLevel))
-
 
 def main():
     global running
     startScreen()
     while(True):
-        level = 1
+        level = 10
         running = True
         while(running):
             levelStart(level)
@@ -348,7 +366,7 @@ def main():
             if(running):
                 levelEnd(level)
                 upgradeScreen()
-            level += 1
+            level = 15
         resetScreen()
 
 def run(level):
@@ -374,7 +392,9 @@ def run(level):
     hit = False
     dead = False
 
-    difficulty = 1 + level / 10
+    explosions = []
+
+    difficulty = 1 #1 + level / 10
 
     currentShieldCoolDown = 0
     currentShrinkCoolDown = 0
@@ -441,12 +461,11 @@ def run(level):
             bullet_add_increment = random.randint(int(round(START_DELAY_BETWEEN_BULLETS / difficulty) / 3), int(round(START_DELAY_BETWEEN_BULLETS / difficulty)))
 
 
-        if(elapsed_time < START_LENGTH_OF_ROUNDS * difficulty):
+        if(elapsed_time < START_LENGTH_OF_ROUNDS * difficulty * 10):
             if bullet_count > bullet_add_increment:
                 for _ in range(random.randint(int(round(START_AMOUNT_OF_BULLETS_PER_WAVE * difficulty)/2), int(round(START_AMOUNT_OF_BULLETS_PER_WAVE * difficulty)))):
                     bullet_x = random.randint(0, WIDTH - BULLET_WIDTH)
                     bullet_type = chooseType(level)
-                    print(bullet_type)
                     if(bullet_type == "speed"):
                         bullet_speed = random.randint((BULLET_VELOCITY - 1) * SPEED_AMOUNT, (BULLET_VELOCITY + 1) * SPEED_AMOUNT)
                     else:
@@ -500,12 +519,26 @@ def run(level):
         for bullet in bullets[:]:
             bullet.hitBox.y += bullet.speed
             if bullet.hitBox.y > HEIGHT:
+                if(bullet.type == "exploding"):
+                    explosion = Explosion.Explosion(elapsed_time, False, pygame.Rect(bullet.hitBox.x - EXPLOSION_SIZE / 2, bullet.hitBox.y - EXPLOSION_SIZE, EXPLOSION_SIZE, EXPLOSION_SIZE))
+                    explosions.append(explosion)
                 bullets.remove(bullet)
             elif bullet.hitBox.y + bullet.hitBox.height >= player.y and bullet.hitBox.colliderect(player):
+                if(bullet.type == "exploding"):
+                    explosion = Explosion.Explosion(elapsed_time, True, pygame.Rect(bullet.hitBox.x - EXPLOSION_SIZE / 2, bullet.hitBox.y, EXPLOSION_SIZE, EXPLOSION_SIZE))
+                    explosions.append(explosion)
                 bullets.remove(bullet)
                 if(not(shield)):
                     hit = True
                 break
+        
+        for explosion in explosions[:]:
+            if(explosion.startTime + EXPLOSION_TIME <= elapsed_time):
+                explosions.remove(explosion)
+            elif(explosion.hitBox.x <= player.x + PLAYER_WIDTH and explosion.hitBox.x + EXPLOSION_SIZE >= player.x and not(explosion.hasHit)):
+                print("here")
+                explosion.hasHit = True
+                hit = True
 
         if hit:
             global health
@@ -514,7 +547,7 @@ def run(level):
             if(health <= 0):
                 dead = True
 
-        draw(player, elapsed_time, bullets, shield, shrink, timeSlow, level, currentShieldCoolDown, currentShrinkCoolDown, currentTimeSlowCoolDown, shrink_time, shield_time, timeSlow_time)
+        draw(player, elapsed_time, bullets, explosions, shield, shrink, timeSlow, level, currentShieldCoolDown, currentShrinkCoolDown, currentTimeSlowCoolDown, shrink_time, shield_time, timeSlow_time)
 
         if dead:
             lost_text = FONT_END.render("You Lost", 1, "black")
