@@ -89,9 +89,9 @@ SPECIAL_BULLET_STARTING_AMOUNT = 10
 
 EXPLOSION_TIME = 0.5
 
-MAX_HOMING = 0.5
-MAX_ANGLE = 45
-HOMING_DEDUCTION = 1
+MAX_HOMING = 5
+MAX_ANGLE = 30
+HOMING_INCREASE =25
 
 health = PLAYER_STARTING_HEALTH
 maxHp = PLAYER_STARTING_HEALTH
@@ -362,9 +362,9 @@ def chooseType(level):
 def findAngle(player, bullet):
     differenceInX = (player.x + PLAYER_WIDTH / 2) - (bullet.hitBox.x + BULLET_WIDTH / 2)
     differenceInY = (player.y + PLAYER_HEIGHT / 2) - (bullet.hitBox.y + BULLET_HEIGHT / 2)
-    angle = math.tan(differenceInX / differenceInY)
-    turnAngle = angle / HOMING_DEDUCTION
-    if(turnAngle <= MAX_HOMING):
+    angle = math.tan(math.radians(differenceInX / differenceInY))
+    turnAngle = angle * HOMING_INCREASE
+    if(turnAngle <= MAX_HOMING or turnAngle >= -MAX_HOMING):
         return turnAngle
     else:
         return MAX_HOMING
@@ -544,8 +544,8 @@ def run(level):
                     bullet.angle = -MAX_ANGLE
                 else:
                     bullet.angle = currentAngle
-                amountInX = round(bullet.speed * math.sin(angle))
-                amountInY = round(bullet.speed * math.cos(angle))
+                amountInX = round(bullet.speed * math.sin(math.radians(bullet.angle)))
+                amountInY = round(bullet.speed * math.cos(math.radians(bullet.angle)))
                 bullet.hitBox.x += amountInX
                 bullet.hitBox.y += amountInY
             else:
