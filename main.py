@@ -39,6 +39,10 @@ BULLET = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("bulle
 SPEED_BULLET = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("speed_bullet.png"), (BULLET_HEIGHT + 10, BULLET_WIDTH + 2)), -90)
 EXPLODING_BULLET = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("exploding_bullet.png"), (BULLET_HEIGHT + 10, BULLET_WIDTH + 2)), -90)
 HOMING_BULLET = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("homing_bullet.png"), (BULLET_HEIGHT + 10, BULLET_WIDTH + 2)), -90)
+SPEED_EXPLODING_BULLET = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("speed_exploding_bullet.png"), (BULLET_HEIGHT + 10, BULLET_WIDTH + 2)), -90)
+SPEED_HOMING_BULLET = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("speed_homing_bullet.png"), (BULLET_HEIGHT + 10, BULLET_WIDTH + 2)), -90)
+EXPLODING_HOMING_BULLET = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("exploding_homing_bullet.png"), (BULLET_HEIGHT + 10, BULLET_WIDTH + 2)), -90)
+SUPER_BULLET = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("super_bullet.png"), (BULLET_HEIGHT + 10, BULLET_WIDTH + 2)), -90)
 EXPLOSION = pygame.transform.scale(pygame.image.load("NicePng_light-effect-png_43400.png"), (EXPLOSION_SIZE * 2, EXPLOSION_SIZE * 2))
 slime_left = pygame.transform.scale(pygame.image.load("Slime_Left.png"), (SLIME_WIDTH, SLIME_HEIGHT))
 slime_right = pygame.transform.scale(pygame.image.load("Slime_Right.png"), (SLIME_WIDTH, SLIME_HEIGHT))
@@ -46,7 +50,7 @@ slime_right = pygame.transform.scale(pygame.image.load("Slime_Right.png"), (SLIM
 PLAYER_WIDTH = 50
 PLAYER_HEIGHT = 35
 PLAYER_VELOCITY = 8
-PLAYER_STARTING_HEALTH = 300
+PLAYER_STARTING_HEALTH = 3
 
 BULLET_VELOCITY = 8
 
@@ -87,11 +91,11 @@ SPECIAL_BULLET_LEVEL_SCALING = 2
 
 SPECIAL_BULLET_STARTING_AMOUNT = 10
 
-EXPLOSION_TIME = 0.5
+EXPLOSION_TIME = 0.25
 
-MAX_HOMING = 5
+MAX_HOMING = 6
 MAX_ANGLE = 30
-HOMING_INCREASE =25
+HOMING_INCREASE = 40
 
 health = PLAYER_STARTING_HEALTH
 maxHp = PLAYER_STARTING_HEALTH
@@ -165,12 +169,29 @@ def draw(player, elapsed_time, bullets, explosions, shield, shrink, timeSlow, le
         WIN.blit(SHIELD, (player.x + player.width / 2 - SHIELD.get_width() / 2, HEIGHT - SHIELD.get_height()))
 
     for bullet in bullets:
-        if(bullet.type == "homing"):
-            WIN.blit(pygame.transform.rotate(pygame.image.load("homing_bullet.png"), bullet.angle - 90), (bullet.hitBox.x, bullet.hitBox.y))
-        elif(bullet.type == "exploding"):
-            WIN.blit(EXPLODING_BULLET, (bullet.hitBox.x, bullet.hitBox.y))
-        elif(bullet.type == "speed"):
-            WIN.blit(SPEED_BULLET, (bullet.hitBox.x, bullet.hitBox.y))
+        if(len(bullet.type) == 3):
+            WIN.blit(pygame.transform.rotate(SUPER_BULLET, bullet.angle), (bullet.hitBox.x, bullet.hitBox.y))
+        elif(bullet.type[0] == "homing"):
+            if(bullet.type[1] == "exploding"):
+                WIN.blit(pygame.transform.rotate(EXPLODING_HOMING_BULLET, bullet.angle), (bullet.hitBox.x, bullet.hitBox.y))
+            elif(bullet.type[1] == "speed"):
+                WIN.blit(pygame.transform.rotate(SPEED_HOMING_BULLET, bullet.angle), (bullet.hitBox.x, bullet.hitBox.y))
+            else:
+                WIN.blit(pygame.transform.rotate(HOMING_BULLET, bullet.angle), (bullet.hitBox.x, bullet.hitBox.y))
+        elif(bullet.type[0] == "exploding"):
+            if(bullet.type[1] == "speed"):
+                WIN.blit(SPEED_EXPLODING_BULLET, (bullet.hitBox.x, bullet.hitBox.y))
+            elif(bullet.type[1] == "homing"):
+                WIN.blit(pygame.transform.rotate(EXPLODING_HOMING_BULLET, bullet.angle), (bullet.hitBox.x, bullet.hitBox.y))
+            else:
+                WIN.blit(EXPLODING_BULLET, (bullet.hitBox.x, bullet.hitBox.y))
+        elif(bullet.type[0] == "speed"):
+            if(bullet.type[1] == "exploding"):
+                WIN.blit(SPEED_EXPLODING_BULLET, (bullet.hitBox.x, bullet.hitBox.y))
+            elif(bullet.type[1] == "homing"):
+                WIN.blit(pygame.transform.rotate(SPEED_HOMING_BULLET, bullet.angle), (bullet.hitBox.x, bullet.hitBox.y))
+            else:
+                WIN.blit(SPEED_BULLET, (bullet.hitBox.x, bullet.hitBox.y))
         else:
             WIN.blit(BULLET, (bullet.hitBox.x, bullet.hitBox.y))
 
@@ -345,29 +366,49 @@ def reset():
 def chooseType(level):
     randomInt = random.randint(1,100)
     totalBulletTypeAmount = 0
+    if(level >= SUPER_BULLET_START_ROUND):
+        totalBulletTypeAmount += SPECIAL_BULLET_STARTING_AMOUNT + (SPECIAL_BULLET_LEVEL_SCALING * (level - SUPER_BULLET_START_ROUND))
+        if(randomInt > 100 - (totalBulletTypeAmount)):
+            return ("speed", "exploding", "homing")
+    if(level >= COMBO_BULLET_START_ROUND):
+        totalBulletTypeAmount += SPECIAL_BULLET_STARTING_AMOUNT + (SPECIAL_BULLET_LEVEL_SCALING * (level - COMBO_BULLET_START_ROUND))
+        if(randomInt > 100 - (totalBulletTypeAmount)):
+            type1 = random.choice(("speed", "exploding", "homing"))
+            type2 = random.choice(("speed", "exploding", "homing"))
+            while(type1 == type2):
+                type2 = random.choice(("speed", "exploding", "homing"))
+            return (type1, type2)
     if(level >= HOMING_BULLET_START_ROUND):
         totalBulletTypeAmount += SPECIAL_BULLET_STARTING_AMOUNT + (SPECIAL_BULLET_LEVEL_SCALING * (level - HOMING_BULLET_START_ROUND))
         if(randomInt > 100 - (totalBulletTypeAmount)):
-            return "homing"
+            return ("homing","")
     if(level >= EXPLODING_BULLET_START_ROUND):
         totalBulletTypeAmount += SPECIAL_BULLET_STARTING_AMOUNT + (SPECIAL_BULLET_LEVEL_SCALING * (level - EXPLODING_BULLET_START_ROUND))
         if(randomInt > 100 - (totalBulletTypeAmount)):
-            return "exploding"
+            return ("exploding","")
     if(level >= SPEED_BULLET_START_ROUND):
         totalBulletTypeAmount += SPECIAL_BULLET_STARTING_AMOUNT + (SPECIAL_BULLET_LEVEL_SCALING * (level - SPEED_BULLET_START_ROUND))
         if(randomInt > 100 - (totalBulletTypeAmount)):
-            return "speed"
-    return "normal"
+            return ("speed","")
+    return ("normal","")
 
 def findAngle(player, bullet):
     differenceInX = (player.x + PLAYER_WIDTH / 2) - (bullet.hitBox.x + BULLET_WIDTH / 2)
     differenceInY = (player.y + PLAYER_HEIGHT / 2) - (bullet.hitBox.y + BULLET_HEIGHT / 2)
     angle = math.tan(math.radians(differenceInX / differenceInY))
-    turnAngle = angle * HOMING_INCREASE
-    if(turnAngle <= MAX_HOMING or turnAngle >= -MAX_HOMING):
-        return turnAngle
-    else:
-        return MAX_HOMING
+    for i in range(len(bullet.type)):
+        if(bullet.type[i] == "speed"):
+            turnAngle = angle * HOMING_INCREASE * SPEED_AMOUNT
+            if(turnAngle <= MAX_HOMING * SPEED_AMOUNT or turnAngle >= -MAX_HOMING * SPEED_AMOUNT):
+                return turnAngle
+            else:
+                return MAX_HOMING
+        else:
+            turnAngle = angle * HOMING_INCREASE
+            if(turnAngle <= MAX_HOMING or turnAngle >= -MAX_HOMING):
+                return turnAngle
+            else:
+                return MAX_HOMING
 
 
 
@@ -375,7 +416,7 @@ def main():
     global running
     startScreen()
     while(True):
-        level = 15
+        level = 1
         running = True
         while(running):
             levelStart(level)
@@ -483,10 +524,13 @@ def run(level):
                 for _ in range(random.randint(int(round(START_AMOUNT_OF_BULLETS_PER_WAVE * difficulty)/2), int(round(START_AMOUNT_OF_BULLETS_PER_WAVE * difficulty)))):
                     bullet_x = random.randint(0, WIDTH - BULLET_WIDTH)
                     bullet_type = chooseType(level)
-                    if(bullet_type == "speed"):
-                        bullet_speed = random.randint((BULLET_VELOCITY - 1) * SPEED_AMOUNT, (BULLET_VELOCITY + 1) * SPEED_AMOUNT)
-                    else:
-                        bullet_speed = random.randint(BULLET_VELOCITY - 1, BULLET_VELOCITY + 1)
+                    print(bullet_type)
+                    for i in range(len(bullet_type)):
+                        if(bullet_type[i] == "speed"):
+                            bullet_speed = random.randint((BULLET_VELOCITY - 1) * SPEED_AMOUNT, (BULLET_VELOCITY + 1) * SPEED_AMOUNT)
+                            break
+                        else:
+                            bullet_speed = random.randint(BULLET_VELOCITY - 1, BULLET_VELOCITY + 1)
                     bullet = Bullet.Bullet(bullet_speed, bullet_type, pygame.Rect(bullet_x, -BULLET_HEIGHT, BULLET_WIDTH, BULLET_HEIGHT))
                     bullets.append(bullet)
                 
@@ -534,31 +578,36 @@ def run(level):
             currentDirection = slime_right
 
         for bullet in bullets[:]:
-            if(bullet.type == "homing"):
-                bullet.previousAngle = bullet.angle
-                angle = findAngle(player, bullet)
-                currentAngle = bullet.angle + angle
-                if(currentAngle > MAX_ANGLE):
-                    bullet.angle = MAX_ANGLE
-                elif(currentAngle < -MAX_ANGLE):
-                    bullet.angle = -MAX_ANGLE
+            for i in range(len(bullet.type)):
+                if(bullet.type[i] == "homing"):
+                    bullet.previousAngle = bullet.angle
+                    angle = findAngle(player, bullet)
+                    currentAngle = bullet.angle + angle
+                    if(currentAngle > MAX_ANGLE):
+                        bullet.angle = MAX_ANGLE
+                    elif(currentAngle < -MAX_ANGLE):
+                        bullet.angle = -MAX_ANGLE
+                    else:
+                        bullet.angle = currentAngle
+                    amountInX = round(bullet.speed * math.sin(math.radians(bullet.angle)))
+                    amountInY = round(bullet.speed * math.cos(math.radians(bullet.angle)))
+                    bullet.hitBox.x += amountInX
+                    print(amountInY)
+                    bullet.hitBox.y += amountInY
+                    break
                 else:
-                    bullet.angle = currentAngle
-                amountInX = round(bullet.speed * math.sin(math.radians(bullet.angle)))
-                amountInY = round(bullet.speed * math.cos(math.radians(bullet.angle)))
-                bullet.hitBox.x += amountInX
-                bullet.hitBox.y += amountInY
-            else:
-                bullet.hitBox.y += bullet.speed
+                    bullet.hitBox.y += bullet.speed
             if bullet.hitBox.y > HEIGHT:
-                if(bullet.type == "exploding"):
-                    explosion = Explosion.Explosion(elapsed_time, False, pygame.Rect(bullet.hitBox.x - EXPLOSION_SIZE / 2, bullet.hitBox.y - EXPLOSION_SIZE, EXPLOSION_SIZE, EXPLOSION_SIZE))
-                    explosions.append(explosion)
+                for i in range(len(bullet.type)):
+                    if(bullet.type[i] == "exploding"):
+                        explosion = Explosion.Explosion(elapsed_time, False, pygame.Rect(bullet.hitBox.x - EXPLOSION_SIZE / 2, bullet.hitBox.y - EXPLOSION_SIZE, EXPLOSION_SIZE, EXPLOSION_SIZE))
+                        explosions.append(explosion)
                 bullets.remove(bullet)
             elif bullet.hitBox.y + bullet.hitBox.height >= player.y and bullet.hitBox.colliderect(player):
-                if(bullet.type == "exploding"):
-                    explosion = Explosion.Explosion(elapsed_time, True, pygame.Rect(bullet.hitBox.x - EXPLOSION_SIZE / 2, bullet.hitBox.y, EXPLOSION_SIZE, EXPLOSION_SIZE))
-                    explosions.append(explosion)
+                for i in range(len(bullet.type)):
+                    if(bullet.type[i] == "exploding"):
+                        explosion = Explosion.Explosion(elapsed_time, True, pygame.Rect(bullet.hitBox.x - EXPLOSION_SIZE / 2, bullet.hitBox.y, EXPLOSION_SIZE, EXPLOSION_SIZE))
+                        explosions.append(explosion)
                 bullets.remove(bullet)
                 if(not(shield)):
                     hit = True
