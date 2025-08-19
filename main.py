@@ -452,7 +452,7 @@ def run(level):
 
     explosions = []
 
-    difficulty = 1 + level / 10
+    difficulty = 1 + level / 15
 
     currentShieldCoolDown = 0
     currentShrinkCoolDown = 0
