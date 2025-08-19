@@ -89,8 +89,9 @@ SPECIAL_BULLET_STARTING_AMOUNT = 10
 
 EXPLOSION_TIME = 0.5
 
-MAX_HOMING = 1
-HOMING_DEDUCTION = 5
+MAX_HOMING = 0.5
+MAX_ANGLE = 45
+HOMING_DEDUCTION = 1
 
 health = PLAYER_STARTING_HEALTH
 maxHp = PLAYER_STARTING_HEALTH
@@ -536,7 +537,13 @@ def run(level):
             if(bullet.type == "homing"):
                 bullet.previousAngle = bullet.angle
                 angle = findAngle(player, bullet)
-                bullet.angle += angle
+                currentAngle = bullet.angle + angle
+                if(currentAngle > MAX_ANGLE):
+                    bullet.angle = MAX_ANGLE
+                elif(currentAngle < -MAX_ANGLE):
+                    bullet.angle = -MAX_ANGLE
+                else:
+                    bullet.angle = currentAngle
                 amountInX = round(bullet.speed * math.sin(angle))
                 amountInY = round(bullet.speed * math.cos(angle))
                 bullet.hitBox.x += amountInX
