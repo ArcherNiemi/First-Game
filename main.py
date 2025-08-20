@@ -214,15 +214,15 @@ def draw_transparent_arc(surface, color, rect, start_angle, stop_angle, width=ro
 
 def startScreen():
     run = True
-    title_text = FONT_TITLE.render("Bullet Barrage", 1, "white")
+    title_text = FONT_TITLE.render("Bullet Barrage", 1, "tan")
     WIN.blit(title_text, (WIDTH/2 - title_text.get_width()/2, HEIGHT/4 - title_text.get_height()/2))
     start_text = FONT_START.render("Press Space To Start", 1, "white")
     WIN.blit(start_text, (WIDTH/2 - start_text.get_width()/2, HEIGHT/2 - start_text.get_height()/2))
-    buttons_text = FONT_BUTTONS.render("shield = 1", 1, "white")
+    buttons_text = FONT_BUTTONS.render("Shield = 1", 1, "blue")
     WIN.blit(buttons_text, (WIDTH/4 - buttons_text.get_width()/2, HEIGHT/(1 + 1/6) - buttons_text.get_height()/2))
-    buttons_text = FONT_BUTTONS.render("shrink = 2", 1, "white")
+    buttons_text = FONT_BUTTONS.render("Shrink = 2", 1, "purple")
     WIN.blit(buttons_text, (WIDTH/(4/2) - buttons_text.get_width()/2, HEIGHT/(1 + 1/6) - buttons_text.get_height()/2))
-    buttons_text = FONT_BUTTONS.render("timeSlow = 3", 1, "white")
+    buttons_text = FONT_BUTTONS.render("Time Slow = 3", 1, "green")
     WIN.blit(buttons_text, (WIDTH/(4/3) - buttons_text.get_width()/2, HEIGHT/(1 + 1/6) - buttons_text.get_height()/2))
     pygame.display.update()
 
@@ -232,7 +232,7 @@ def startScreen():
                 run = False
                 pygame.quit()
                 break
-        
+            
         keys = pygame.key.get_pressed()
         if keys[pygame.K_SPACE]:
             break
@@ -243,6 +243,7 @@ def levelStart(level: int):
     WIN.blit(level_text, (WIDTH/2 - level_text.get_width()/2, HEIGHT/2 - level_text.get_height()/2))
     pygame.display.update()
     pygame.time.delay(1000)
+
 
 def levelEnd(level: int):
     WIN.blit(BG, (0, 0))
