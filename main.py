@@ -411,6 +411,8 @@ def reset():
     global health
     global maxHp
     global upgrade_stats
+    global luck
+    luck = LUCK_STARTING_AMOUNT
     health = PLAYER_STARTING_HEALTH
     maxHp = PLAYER_STARTING_HEALTH
     Upgrade.shield.duration = 0
@@ -470,6 +472,7 @@ def findAngle(player, bullet):
 
 def main():
     global running
+    global luck
     startScreen()
     while(True):
         level = 1
@@ -481,6 +484,7 @@ def main():
                 levelEnd(level)
                 upgradeScreen()
             level += 1
+            luck += 1
         resetScreen()
 
 def run(level):
