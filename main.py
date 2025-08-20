@@ -14,7 +14,7 @@ WIDTH, HEIGHT = 900, 700
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Bullet Barrage")
 
-UPGRADE_SIZE = 280
+UPGRADE_SIZE = 200
 HEART_SIZE = WIDTH / 15
 SHIELD_SIZE_WIDTH = 80
 SHIELD_SIZE_HEIGHT = 55
@@ -58,7 +58,7 @@ FONT = pygame.font.SysFont("arial", 30)
 FONT_START = pygame.font.SysFont("arial", 60)
 FONT_END = pygame.font.SysFont("arial", 80)
 FONT_LEVEL = pygame.font.SysFont("arial", 60)
-FONT_UPGRADE = pygame.font.SysFont("arial", 30)
+FONT_UPGRADE = pygame.font.SysFont("arial", 25)
 FONT_BUTTONS = pygame.font.SysFont("arial", 40)
 FONT_TITLE = pygame.font.SysFont("arial", 80)
 FONT_RESTART = pygame.font.SysFont("arial", 80)
@@ -73,11 +73,20 @@ UPGRADE_LIST = ["Hp Increase", "Heal", "Shield", "Shrink", "Time Slow"]
 SHRINK_SIZE = 2
 TIME_SLOW_AMOUNT = 2
 
-RARE_RARITY = 5
+COMMON_RARITY = 1
+RARE_RARITY = 4
+EPIC_RARITY = 16
+LEGENDARY_RARITY = 64
 
+COMMON_POWER = 1
 RARE_POWER = 2
+EPIC_POWER = 4
+LEGENDARY_POWER = 8
 
-TOTAL_AMOUNT_OF_UPGRADES = 5
+TOTAL_AMOUNT_OF_COMMON_UPGRADES = 5
+TOTAL_AMOUNT_OF_RARE_UPGRADES = 5
+TOTAL_AMOUNT_OF_EPIC_UPGRADES = 5
+TOTAL_AMOUNT_OF_LENGENDARY_UPGRADES = 5
 
 COOL_DOWN = 5
 
@@ -93,13 +102,20 @@ SPECIAL_BULLET_STARTING_AMOUNT = 10
 
 EXPLOSION_TIME = 0.25
 
-MAX_HOMING = 6
-MAX_ANGLE = 30
-HOMING_INCREASE = 40
+MAX_HOMING = 5
+MAX_ANGLE = 25
+HOMING_INCREASE = 30
+
+LUCK_STARTING_AMOUNT = 1
+LUCK_SCALING = 0.05 #higher is stronger luck scaling
+
+RARITIES = ["common", "rare", "epic", "legendary"]
+BASE = [LEGENDARY_RARITY, EPIC_RARITY, RARE_RARITY, COMMON_RARITY]
 
 health = PLAYER_STARTING_HEALTH
 maxHp = PLAYER_STARTING_HEALTH
 running = True
+luck = LUCK_STARTING_AMOUNT
 
 upgrade_stats = [maxHp, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration]
 UPGRADE_STAT_AMOUNT = [1, 3, 0.25, 0.5, 0.75]
@@ -253,37 +269,48 @@ def levelEnd(level: int):
 
 def upgradeScreen():
     WIN.blit(BG, (0, 0))
-    upgrade = [0,0]
-    rarity_increase = [1,1]
+    upgrade = [0,0,0]
+    rarity_increase = [1,1,1]
     upgradeColor = "white"
-    upgrade[0] = random.randint(0, TOTAL_AMOUNT_OF_UPGRADES * RARE_RARITY - 1)
-    upgrade[1] = random.randint(0, TOTAL_AMOUNT_OF_UPGRADES * RARE_RARITY - 1)
+    totalAmountOfNumbers = TOTAL_AMOUNT_OF_COMMON_UPGRADES * LEGENDARY_RARITY + TOTAL_AMOUNT_OF_RARE_UPGRADES * EPIC_RARITY + TOTAL_AMOUNT_OF_EPIC_UPGRADES * RARE_RARITY + TOTAL_AMOUNT_OF_LENGENDARY_UPGRADES - 1
+    upgrade[0] = random.randint(0, totalAmountOfNumbers)
+    upgrade[1] = random.randint(0, totalAmountOfNumbers)
+    upgrade[2] = random.randint(0, totalAmountOfNumbers)
 
-    while(upgrade[0] % TOTAL_AMOUNT_OF_UPGRADES == upgrade[1] % TOTAL_AMOUNT_OF_UPGRADES):
-        upgrade[1] = random.randint(0, TOTAL_AMOUNT_OF_UPGRADES * RARE_RARITY - 1)
-    for i in range(2):
-        if(upgrade[i] >= (TOTAL_AMOUNT_OF_UPGRADES * RARE_RARITY) - TOTAL_AMOUNT_OF_UPGRADES):
+    while(upgrade[0] % TOTAL_AMOUNT_OF_COMMON_UPGRADES == upgrade[1] % TOTAL_AMOUNT_OF_COMMON_UPGRADES):
+        upgrade[1] = random.randint(0, totalAmountOfNumbers)
+    while(upgrade[0] % TOTAL_AMOUNT_OF_COMMON_UPGRADES == upgrade[2] % TOTAL_AMOUNT_OF_COMMON_UPGRADES or upgrade[1] % TOTAL_AMOUNT_OF_COMMON_UPGRADES == upgrade[2] % TOTAL_AMOUNT_OF_COMMON_UPGRADES):
+        upgrade[2] = random.randint(0, totalAmountOfNumbers)
+    for i in range(len(upgrade)):
+        print(odds())
+        if(roll_item() == "legendary"):
+            rarity_increase[i] = LEGENDARY_POWER
+            upgradeColor = "yellow"
+        elif(roll_item() == "epic"):
+            rarity_increase[i] = EPIC_POWER
+            upgradeColor = "purple"
+        elif(roll_item() == "rare"):
             rarity_increase[i] = RARE_POWER
             upgradeColor = "green"
         else:
-            rarity_increase[i] = 1
+            rarity_increase[i] = COMMON_POWER
             upgradeColor = "white"
 
-        pygame.draw.rect(WIN, "black", pygame.Rect(WIDTH / (1.5 * (i + 1)) - UPGRADE_SIZE / 2, HEIGHT / 2 - UPGRADE_SIZE / 2, UPGRADE_SIZE, UPGRADE_SIZE))
-        WIN.blit(FRAME, (WIDTH / (1.5 * (i + 1)) - UPGRADE_SIZE / 2, HEIGHT / 2 - UPGRADE_SIZE / 2 ))
+        pygame.draw.rect(WIN, "black", pygame.Rect(getUpgradeLocation(upgrade, i) - UPGRADE_SIZE / 2, HEIGHT / 2 - UPGRADE_SIZE / 2, UPGRADE_SIZE, UPGRADE_SIZE))
+        WIN.blit(FRAME, (getUpgradeLocation(upgrade, i) - UPGRADE_SIZE / 2, HEIGHT / 2 - UPGRADE_SIZE / 2))
 
-        for t in range(TOTAL_AMOUNT_OF_UPGRADES):
-            if(upgrade[i] % TOTAL_AMOUNT_OF_UPGRADES == t):
+        for t in range(TOTAL_AMOUNT_OF_COMMON_UPGRADES):
+            if(upgrade[i] % TOTAL_AMOUNT_OF_COMMON_UPGRADES == t):
                 splitUpgrade = UPGRADE_LIST[t].split()
                 if(upgrade_stats[t] == 0):
                     splitUpgrade.append(f"({upgrade_stats[t]}s => {upgrade_stats[t] + UPGRADE_STAT_AMOUNT[t] * 2}s)")
                     for p in range(len(splitUpgrade)):
                         upgrade_text = FONT_UPGRADE.render(splitUpgrade[p], 1, "white")
-                        WIN.blit(upgrade_text, (WIDTH/((i+1) * 1.5) - upgrade_text.get_width()/2, HEIGHT/2 - (upgrade_text.get_height()/2) * ((len(splitUpgrade)) - p * 2) ))
+                        WIN.blit(upgrade_text, (getUpgradeLocation(upgrade, i) - upgrade_text.get_width()/2, HEIGHT/2 - (upgrade_text.get_height()/2) * ((len(splitUpgrade)) - p * 2) ))
                 else:
-                    if(upgrade[i] % TOTAL_AMOUNT_OF_UPGRADES == 0):
+                    if(upgrade[i] % TOTAL_AMOUNT_OF_COMMON_UPGRADES == 0):
                         splitUpgrade.append(f"({upgrade_stats[t]} => {upgrade_stats[t] + UPGRADE_STAT_AMOUNT[t] * rarity_increase[i]})")
-                    elif(upgrade[i] % TOTAL_AMOUNT_OF_UPGRADES == 1):
+                    elif(upgrade[i] % TOTAL_AMOUNT_OF_COMMON_UPGRADES == 1):
                         if(health + UPGRADE_STAT_AMOUNT[t] * rarity_increase[i] >= maxHp):
                             splitUpgrade.append(f"({health} => {upgrade_stats[0]})")
                         else:
@@ -292,7 +319,7 @@ def upgradeScreen():
                         splitUpgrade.append(f"({upgrade_stats[t]}s => {upgrade_stats[t] + UPGRADE_STAT_AMOUNT[t] * rarity_increase[i]}s)")
                     for p in range(len(splitUpgrade)):
                         upgrade_text = FONT_UPGRADE.render(splitUpgrade[p], 1, upgradeColor)
-                        WIN.blit(upgrade_text, (WIDTH/((i+1) * 1.5) - upgrade_text.get_width()/2, HEIGHT/2 - (upgrade_text.get_height()/2) * ((len(splitUpgrade)) - p * 2) ))
+                        WIN.blit(upgrade_text, (getUpgradeLocation(upgrade, i) - upgrade_text.get_width()/2, HEIGHT/2 - (upgrade_text.get_height()/2) * ((len(splitUpgrade)) - p * 2) ))
     pygame.display.update()
     run = True
     while run:
@@ -302,15 +329,18 @@ def upgradeScreen():
                 pygame.quit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 clickpos = event.pos
-                for i in range(2):
-                    if(clickpos[0] > WIDTH / (1.5 * (i + 1)) - UPGRADE_SIZE / 2 and clickpos[0] < WIDTH / (1.5 * (i + 1)) + UPGRADE_SIZE / 2 
+                for i in range(len(upgrade)):
+                    if(clickpos[0] > getUpgradeLocation(upgrade, i) - UPGRADE_SIZE / 2 and clickpos[0] < getUpgradeLocation(upgrade, i) + UPGRADE_SIZE / 2 
                        and clickpos[1] > HEIGHT / 2 - UPGRADE_SIZE / 2 and clickpos[1] < HEIGHT / 2 + UPGRADE_SIZE / 2):
-                        clickedAbility = upgrade[i] % TOTAL_AMOUNT_OF_UPGRADES
+                        clickedAbility = upgrade[i] % TOTAL_AMOUNT_OF_COMMON_UPGRADES
                         print(f"upgrade: {clickedAbility}")
                         print(f"rarity: {rarity_increase[i]}")
                         number = rarity_increase[i]
                         run = False
     giveAbility(clickedAbility, number)
+
+def getUpgradeLocation(upgrade, i):
+    return WIDTH - (WIDTH / (len(upgrade) + 1)) * (i + 1)
     
 def giveAbility(clickedAbility, rarityIncrease):
     global upgrade_stats
@@ -327,6 +357,32 @@ def giveAbility(clickedAbility, rarityIncrease):
     elif(clickedAbility == 4):
         Upgrade.timeSlow.duration += Upgrade.timeSlowIncrease(rarityIncrease)
     upgrade_stats = [maxHp, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration]
+
+def roll_item():
+    # log-weights for stability
+    beta = LUCK_SCALING
+    logw = []
+    for i, w in enumerate(BASE):
+        logw.append(math.log(w) + beta * luck * i)
+    # log-sum-exp
+    m = max(logw)
+    denom = sum(math.exp(x - m) for x in logw)
+    probs = [math.exp(x - m) / denom for x in logw]
+
+    # sample
+    r = random.random()
+    cum = 0.0
+    for rarity, p in zip(RARITIES, probs):
+        cum += p
+        if r <= cum:
+            return rarity
+
+def odds():
+    # helper to inspect probabilities
+    beta = LUCK_SCALING
+    logw = [math.log(w) + beta * luck * i for i, w in enumerate(BASE)]
+    m = max(logw); denom = sum(math.exp(x - m) for x in logw)
+    return [math.exp(x - m) / denom for x in logw]
 
 def resetScreen():
     background = pygame.Rect(0, 0, WIDTH, HEIGHT)
