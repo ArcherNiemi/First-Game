@@ -578,6 +578,7 @@ def run(level):
             currentDirection = slime_right
 
         for bullet in bullets[:]:
+            noHoming = False
             for i in range(len(bullet.type)):
                 if(bullet.type[i] == "homing"):
                     bullet.previousAngle = bullet.angle
@@ -594,9 +595,12 @@ def run(level):
                     bullet.hitBox.x += amountInX
                     print(amountInY)
                     bullet.hitBox.y += amountInY
+                    noHoming = False
                     break
                 else:
-                    bullet.hitBox.y += bullet.speed
+                    noHoming = True
+            if(noHoming):
+                bullet.hitBox.y += bullet.speed
             if bullet.hitBox.y > HEIGHT:
                 for i in range(len(bullet.type)):
                     if(bullet.type[i] == "exploding"):
