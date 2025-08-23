@@ -50,22 +50,13 @@ def healUp(rarityIncrease, maxHp, health):
         return healAmount
 
 def shieldIncrease(rarityIncrease):
-    if(shield.duration == 0):
-        return shield.durationIncrease * 2
-    else:
-        return shield.durationIncrease * rarityIncrease
+    return shield.durationIncrease * rarityIncrease
 
 def shrinkIncrease(rarityIncrease):
-    if(shrink.duration == 0):
-        return shrink.durationIncrease * 2
-    else:
-        return shrink.durationIncrease * rarityIncrease
+    return shrink.durationIncrease * rarityIncrease
 
 def timeSlowIncrease(rarityIncrease):
-    if(timeSlow.duration == 0):
-        return timeSlow.durationIncrease * 2
-    else:
-        return timeSlow.durationIncrease * rarityIncrease
+    return timeSlow.durationIncrease * rarityIncrease
 
 
 hpIncrease = Upgrade("stat increase", "common", 1, None, None)
