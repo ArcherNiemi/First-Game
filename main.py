@@ -14,7 +14,7 @@ WIDTH, HEIGHT = 900, 700
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Bullet Barrage")
 
-UPGRADE_SIZE = 200
+UPGRADE_SIZE = 240
 HEART_SIZE = WIDTH / 15
 SHIELD_SIZE_WIDTH = 80
 SHIELD_SIZE_HEIGHT = 55
@@ -58,7 +58,7 @@ FONT = pygame.font.SysFont("arial", 30)
 FONT_START = pygame.font.SysFont("arial", 60)
 FONT_END = pygame.font.SysFont("arial", 80)
 FONT_LEVEL = pygame.font.SysFont("arial", 60)
-FONT_UPGRADE = pygame.font.SysFont("arial", 25)
+FONT_UPGRADE = pygame.font.SysFont("arial", 28)
 FONT_BUTTONS = pygame.font.SysFont("arial", 40)
 FONT_TITLE = pygame.font.SysFont("arial", 80)
 FONT_RESTART = pygame.font.SysFont("arial", 80)
@@ -341,8 +341,8 @@ def upgradeScreen(unlock_chance):
                     upgrade[2] = random.randint(0, totalAmountOfNumbers)
                     currentString = allUpgrades[upgrade[2]]
 
-        pygame.draw.rect(WIN, "black", pygame.Rect(getUpgradeLocation(upgrade, i) - UPGRADE_SIZE / 2, HEIGHT / 2 - UPGRADE_SIZE / 2, UPGRADE_SIZE, UPGRADE_SIZE))
-        WIN.blit(FRAME, (getUpgradeLocation(upgrade, i) - UPGRADE_SIZE / 2, HEIGHT / 2 - UPGRADE_SIZE / 2))
+        pygame.draw.rect(WIN, "black", pygame.Rect(getUpgradeLocation(i) - UPGRADE_SIZE / 2, HEIGHT / 2 - UPGRADE_SIZE / 2, UPGRADE_SIZE, UPGRADE_SIZE))
+        WIN.blit(FRAME, (getUpgradeLocation(i) - UPGRADE_SIZE / 2, HEIGHT / 2 - UPGRADE_SIZE / 2))
 
         for t in range(TOTAL_AMOUNT_OF_COMMON_UPGRADES):
             splitUpgrade = []
@@ -364,7 +364,7 @@ def upgradeScreen(unlock_chance):
                         splitUpgrade.append(f"{upgrade_stats[t]}s => {upgrade_stats[t] + UPGRADE_STAT_AMOUNT[t] * rarity_increase[i]}s")
                 for p in range(len(splitUpgrade)):
                     upgrade_text = FONT_UPGRADE.render(splitUpgrade[p], 1, upgradeColor)
-                    WIN.blit(upgrade_text, (getUpgradeLocation(upgrade, i) - upgrade_text.get_width()/2, HEIGHT/2 - (upgrade_text.get_height()/2) * ((len(splitUpgrade)) - p * 2) ))
+                    WIN.blit(upgrade_text, (getUpgradeLocation(i) - upgrade_text.get_width()/2, HEIGHT/2 - (upgrade_text.get_height()/2) * ((len(splitUpgrade)) - p * 2) ))
     pygame.display.update()
     run = True
     while run:
@@ -375,7 +375,7 @@ def upgradeScreen(unlock_chance):
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 clickpos = event.pos
                 for i in range(len(upgrade)):
-                    if(clickpos[0] > getUpgradeLocation(upgrade, i) - UPGRADE_SIZE / 2 and clickpos[0] < getUpgradeLocation(upgrade, i) + UPGRADE_SIZE / 2 
+                    if(clickpos[0] > getUpgradeLocation(i) - UPGRADE_SIZE / 2 and clickpos[0] < getUpgradeLocation(i) + UPGRADE_SIZE / 2 
                        and clickpos[1] > HEIGHT / 2 - UPGRADE_SIZE / 2 and clickpos[1] < HEIGHT / 2 + UPGRADE_SIZE / 2):
                         clickedAbility = upgrade[i] % TOTAL_AMOUNT_OF_COMMON_UPGRADES
                         print(f"upgrade: {clickedAbility}")
@@ -384,8 +384,8 @@ def upgradeScreen(unlock_chance):
                         run = False
     giveAbility(clickedAbility, number)
 
-def getUpgradeLocation(upgrade, i):
-    return WIDTH - (WIDTH / (len(upgrade) + 1)) * (i + 1)
+def getUpgradeLocation(i):
+    return WIDTH - ((WIDTH / 7)) * (i * 2 + 1.5)
     
 def giveAbility(clickedAbility, rarityIncrease):
     global upgrade_stats
@@ -577,8 +577,8 @@ def run(level):
     run = True
 
     player = pygame.Rect(200, HEIGHT - PLAYER_HEIGHT, PLAYER_WIDTH, PLAYER_HEIGHT)
-    slime_left = pygame.transform.scale(pygame.image.load("Slime_Left.png"), (SLIME_WIDTH, SLIME_HEIGHT))
-    slime_right = pygame.transform.scale(pygame.image.load("Slime_Right.png"), (SLIME_WIDTH, SLIME_HEIGHT))
+    slime_left = pygame.transform.scale(pygame.image.load("images/Slime_Left.png"), (SLIME_WIDTH, SLIME_HEIGHT))
+    slime_right = pygame.transform.scale(pygame.image.load("images/Slime_Right.png"), (SLIME_WIDTH, SLIME_HEIGHT))
 
     clock = pygame.time.Clock()
     start_time = time.time()
