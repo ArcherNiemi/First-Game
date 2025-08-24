@@ -44,12 +44,18 @@ def upgrade(clickedAbility, rarityIncrease, maxHp):
 def increaseHp(rarityIncrease):
     return hpIncrease.amount * rarityIncrease
 
+def increaseLuck(rarityIncrease):
+    return luckIncrease.amount * rarityIncrease
+
 def healUp(rarityIncrease, maxHp, health):
     healAmount = heal.amount * rarityIncrease
     if(healAmount + health >= maxHp):
         return maxHp - health
     else:
         return healAmount
+    
+def passiveHealUp(rarityIncrease):
+    return passiveHealIncrease.amount * rarityIncrease
 
 def shieldIncrease(rarityIncrease):
     return shield.durationIncrease * rarityIncrease
@@ -60,13 +66,12 @@ def shrinkIncrease(rarityIncrease):
 def timeSlowIncrease(rarityIncrease):
     return timeSlow.durationIncrease * rarityIncrease
 
-def increaseLuck(rarityIncrease):
-    return luckIncrease.amount * rarityIncrease
 
 
 hpIncrease = Upgrade("stat increase", "common", 1, None, None)
-heal = Upgrade("stat increase", "common", 3, None,  None)
 luckIncrease = Upgrade("stat increase", "common", 1, None, None)
+heal = Upgrade("stat increase", "common", 3, None,  None)
+passiveHealIncrease = Upgrade("stat increase", "common", 1, None, None)
 shield = Upgrade("ability", "common", SHIELD_UPGRADE_AMOUNT, 0, SHIELD_COOLDOWN)
 shrink = Upgrade("ability", "common", SHRINK_UPGRADE_AMOUNT, 0, SHRINK_COOLDOWN)
 timeSlow = Upgrade("ability", "common", TIME_SLOW_UPGRADE_AMOUNT, 0, TIME_SLOW_COOLDOWN)

@@ -67,7 +67,7 @@ START_DELAY_BETWEEN_BULLETS = 2000
 START_AMOUNT_OF_BULLETS_PER_WAVE = 5
 START_LENGTH_OF_ROUNDS = 5
 
-UPGRADE_LIST = ["Hp Increase", "luck", "Heal", "Shield", "Shrink", "Time Slow"] #upgrade spot
+UPGRADE_LIST = ["Hp Increase", "Luck", "Passive Heal", "Heal", "Shield", "Shrink", "Time Slow"] #upgrade spot
 
 
 SHRINK_SIZE = 2
@@ -87,10 +87,10 @@ EPIC_POWER = 4
 LEGENDARY_POWER = 8
 MYTHIC_POWER = 32
 
-TOTAL_AMOUNT_OF_COMMON_UPGRADES = 6
-TOTAL_AMOUNT_OF_RARE_UPGRADES = 6
-TOTAL_AMOUNT_OF_EPIC_UPGRADES = 6
-TOTAL_AMOUNT_OF_LENGENDARY_UPGRADES = 6
+TOTAL_AMOUNT_OF_COMMON_UPGRADES = 7 #upgrade spot
+TOTAL_AMOUNT_OF_RARE_UPGRADES = 7
+TOTAL_AMOUNT_OF_EPIC_UPGRADES = 7
+TOTAL_AMOUNT_OF_LENGENDARY_UPGRADES = 7 
 
 COOL_DOWN = 5
 
@@ -124,17 +124,19 @@ BASE = [LEGENDARY_RARITY, EPIC_RARITY, RARE_RARITY, COMMON_RARITY]
 
 health = PLAYER_STARTING_HEALTH
 maxHp = PLAYER_STARTING_HEALTH
-running = True
 luck = LUCK_STARTING_AMOUNT
+passiveHeal = 0
  
-upgrade_stats = [maxHp, luck, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration] #upgrade spot
-UPGRADE_STAT_AMOUNT = [Upgrade.hpIncrease.amount,Upgrade.luckIncrease.amount, Upgrade.heal.amount, Upgrade.shield.durationIncrease, Upgrade.shrink.durationIncrease, Upgrade.timeSlow.durationIncrease] #upgrade spot
+upgrade_stats = [maxHp, luck, passiveHeal, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration] #upgrade spot
+UPGRADE_STAT_AMOUNT = [Upgrade.hpIncrease.amount, Upgrade.luckIncrease.amount, Upgrade.passiveHealIncrease.amount, Upgrade.heal.amount, Upgrade.shield.durationIncrease, Upgrade.shrink.durationIncrease, Upgrade.timeSlow.durationIncrease] #upgrade spot
 
 SPEED_AMOUNT = 2
 
 lockedUpgrades = UPGRADE_LIST.copy()
 
 currentDirection = slime_left
+
+running = True
 
 def draw(player, elapsed_time, bullets, explosions, shield, shrink, timeSlow, level, currentShieldCoolDown, currentShrinkCoolDown, currentTimeSlowCoolDown, shrink_time, shield_time, timeSlow_time):
     pygame.draw.rect(WIN, "red", player)
@@ -272,14 +274,23 @@ def levelStart(level: int):
     pygame.time.delay(1000)
 
 def levelEnd(level: int):
+    global luck
+    global health
+
     WIN.blit(BG, (0, 0))
     level_text = FONT_LEVEL.render(f"Level: {level} complete", 1, "black")
     WIN.blit(level_text, (WIDTH/2 - level_text.get_width()/2, HEIGHT/2 - level_text.get_height()/2))
     pygame.display.update()
+
+    luck += 1
+    if(passiveHeal + health >= maxHp):
+        health = maxHp
+    else:
+        health += passiveHeal
+
     pygame.time.delay(1000)
 
 def upgradeScreen(unlock_chance):
-    global luck
     WIN.blit(BG, (0, 0))
     upgrade = [0,0,0]
     rarity_increase = [COMMON_POWER,COMMON_POWER,COMMON_POWER]
@@ -354,9 +365,9 @@ def upgradeScreen(unlock_chance):
                 for q in range(len(nameSplit)):
                     splitUpgrade.append(nameSplit[q])
                 if(rarity != "unlock"):
-                    if(upgrade[i] <= 1): #upgrade spot
+                    if(upgrade[i] <= 2): #upgrade spot
                         splitUpgrade.append(f"{upgrade_stats[t]} => {upgrade_stats[t] + UPGRADE_STAT_AMOUNT[t] * rarity_increase[i]}")
-                    elif(upgrade[i] == 2):
+                    elif(upgrade[i] == 3):
                         if(health + UPGRADE_STAT_AMOUNT[t] * rarity_increase[i] >= maxHp):
                             splitUpgrade.append(f"{health} => {upgrade_stats[0]}")
                         else:
@@ -389,10 +400,11 @@ def getUpgradeLocation(i):
     return WIDTH - ((WIDTH / 7)) * (i * 2 + 1.5)
     
 def giveAbility(clickedAbility, rarityIncrease):
-    global upgrade_stats
+    global upgrade_stats #upgrade spot
     global maxHp
     global health
     global luck
+    global passiveHeal
     global lockedUpgrades
     if(UPGRADE_LIST[clickedAbility] in lockedUpgrades):
         lockedUpgrades.remove(UPGRADE_LIST[clickedAbility])
@@ -401,14 +413,16 @@ def giveAbility(clickedAbility, rarityIncrease):
     elif(clickedAbility == 1):
         luck += Upgrade.increaseLuck(rarityIncrease)
     elif(clickedAbility == 2):
-        health += Upgrade.healUp(rarityIncrease, maxHp, health)
+        passiveHeal += Upgrade.passiveHealUp(rarityIncrease)
     elif(clickedAbility == 3):
-        Upgrade.shield.duration += Upgrade.shieldIncrease(rarityIncrease)
+        health += Upgrade.healUp(rarityIncrease, maxHp, health)
     elif(clickedAbility == 4):
-        Upgrade.shrink.duration += Upgrade.shrinkIncrease(rarityIncrease)
+        Upgrade.shield.duration += Upgrade.shieldIncrease(rarityIncrease)
     elif(clickedAbility == 5):
+        Upgrade.shrink.duration += Upgrade.shrinkIncrease(rarityIncrease)
+    elif(clickedAbility == 6):
         Upgrade.timeSlow.duration += Upgrade.timeSlowIncrease(rarityIncrease)
-    upgrade_stats = [maxHp, luck, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration] #upgrade spot
+    upgrade_stats = [maxHp, luck, passiveHeal, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration] #upgrade spot
 
 def roll_item(luck, unlock_chance):
     global finalRareRarity
@@ -486,10 +500,11 @@ def resetScreen():
                     pygame.quit()
 
 def reset():
-    global health
+    global health #upgrade spot
     global maxHp
     global upgrade_stats
     global luck
+    global passiveHeal
     global lockedUpgrades
     luck = LUCK_STARTING_AMOUNT
     health = PLAYER_STARTING_HEALTH
@@ -497,7 +512,7 @@ def reset():
     Upgrade.shield.duration = 0
     Upgrade.shrink.duration = 0
     Upgrade.timeSlow.duration = 0
-    upgrade_stats = [maxHp, luck, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration] #upgrade spot
+    upgrade_stats = [maxHp, luck, passiveHeal, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration] #upgrade spot
     lockedUpgrades = ["maxHp", "health", "shield", "shrink", "timeSlow"]
     print("Reset")
 
@@ -553,6 +568,7 @@ def findAngle(player, bullet):
 def main():
     global running
     global luck
+    global health
     startScreen()
     while(True):
         if(luck != 0):
@@ -570,7 +586,6 @@ def main():
                 levelEnd(level)
                 upgradeScreen(UNLOCK_CHANCE)
             level += 1
-            luck += 1
         resetScreen()
 
 def run(level):
@@ -758,8 +773,7 @@ def run(level):
                         explosion = Explosion.Explosion(elapsed_time, True, pygame.Rect(bullet.hitBox.x - EXPLOSION_SIZE / 2, bullet.hitBox.y, EXPLOSION_SIZE, EXPLOSION_SIZE))
                         explosions.append(explosion)
                 bullets.remove(bullet)
-                if(not(shield)):
-                    hit = True
+                hit = True
                 break
         
         for explosion in explosions[:]:
@@ -771,8 +785,9 @@ def run(level):
                 hit = True
 
         if hit:
-            global health
-            health -= 1
+            if(not(shield)):
+                global health
+                health -= 1
             hit = False
             if(health <= 0):
                 dead = True
