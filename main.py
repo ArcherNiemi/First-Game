@@ -15,7 +15,8 @@ WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Bullet Barrage")
 
 UPGRADE_SIZE = 240
-HEART_SIZE = WIDTH / 15
+HEART_WIDTH = 49.5
+HEART_HEIGHT = 45
 SHIELD_SIZE_WIDTH = 80
 SHIELD_SIZE_HEIGHT = 55
 ABILITY_SIZE = WIDTH / 20
@@ -28,8 +29,9 @@ BULLET_HEIGHT = 30
 EXPLOSION_SIZE = 30
 
 BG = pygame.transform.scale(pygame.image.load("images/vecteezy_green-grass-field-with-blue-sky-ad-white-cloud-nature_40153656.jpg"), (WIDTH, HEIGHT))
-EMPTY_HEART = pygame.transform.scale(pygame.image.load("images/empty_heart.png"), (HEART_SIZE, HEART_SIZE))
-FULL_HEART = pygame.transform.scale(pygame.image.load("images/full_heart.png"), (HEART_SIZE, HEART_SIZE))
+EMPTY_HEART = pygame.transform.scale(pygame.image.load("images/empty_heart.png"), (HEART_WIDTH, HEART_HEIGHT))
+FULL_HEART = pygame.transform.scale(pygame.image.load("images/full_heart.png"), (HEART_WIDTH, HEART_HEIGHT))
+TEMP_HEART = pygame.transform.scale(pygame.image.load("images/temp_heart.png"), (HEART_WIDTH, HEART_HEIGHT))
 SHIELD = pygame.transform.scale(pygame.image.load("images/Blue_Force_Field.png"), (SHIELD_SIZE_WIDTH, SHIELD_SIZE_HEIGHT))
 FRAME = pygame.transform.scale(pygame.image.load("images/Square_Frame_PNG_Clipart.png"), (UPGRADE_SIZE, UPGRADE_SIZE))
 SHIELD_FULL = pygame.transform.scale(pygame.image.load("images/Blue_Force_Field_Full.png"), (ABILITY_SIZE, ABILITY_SIZE))
@@ -67,7 +69,7 @@ START_DELAY_BETWEEN_BULLETS = 2000
 START_AMOUNT_OF_BULLETS_PER_WAVE = 5
 START_LENGTH_OF_ROUNDS = 5
 
-UPGRADE_LIST = ["Hp Increase", "Luck", "Passive Heal", "Heal", "Shield", "Shrink", "Time Slow"] #upgrade spot
+UPGRADE_LIST = ["Hp Increase", "Luck", "Passive Heal", "Temp Hearts", "Heal", "Shield", "Shrink", "Time Slow"] #upgrade spot
 
 
 SHRINK_SIZE = 2
@@ -87,10 +89,10 @@ EPIC_POWER = 4
 LEGENDARY_POWER = 8
 MYTHIC_POWER = 32
 
-TOTAL_AMOUNT_OF_COMMON_UPGRADES = 7 #upgrade spot
-TOTAL_AMOUNT_OF_RARE_UPGRADES = 7
-TOTAL_AMOUNT_OF_EPIC_UPGRADES = 7
-TOTAL_AMOUNT_OF_LENGENDARY_UPGRADES = 7 
+TOTAL_AMOUNT_OF_COMMON_UPGRADES = 8 #upgrade spot
+TOTAL_AMOUNT_OF_RARE_UPGRADES = 8
+TOTAL_AMOUNT_OF_EPIC_UPGRADES = 8
+TOTAL_AMOUNT_OF_LENGENDARY_UPGRADES = 8 
 
 COOL_DOWN = 5
 
@@ -126,9 +128,10 @@ health = PLAYER_STARTING_HEALTH
 maxHp = PLAYER_STARTING_HEALTH
 luck = LUCK_STARTING_AMOUNT
 passiveHeal = 0
+tempHearts = 0
  
-upgrade_stats = [maxHp, luck, passiveHeal, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration] #upgrade spot
-UPGRADE_STAT_AMOUNT = [Upgrade.hpIncrease.amount, Upgrade.luckIncrease.amount, Upgrade.passiveHealIncrease.amount, Upgrade.heal.amount, Upgrade.shield.durationIncrease, Upgrade.shrink.durationIncrease, Upgrade.timeSlow.durationIncrease] #upgrade spot
+upgrade_stats = [maxHp, luck, passiveHeal, tempHearts, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration] #upgrade spot
+UPGRADE_STAT_AMOUNT = [Upgrade.hpIncrease.amount, Upgrade.luckIncrease.amount, Upgrade.passiveHealIncrease.amount, Upgrade.tempHeartIncrease.amount, Upgrade.heal.amount, Upgrade.shield.durationIncrease, Upgrade.shrink.durationIncrease, Upgrade.timeSlow.durationIncrease] #upgrade spot
 
 SPEED_AMOUNT = 2
 
@@ -147,18 +150,33 @@ def draw(player, elapsed_time, bullets, explosions, shield, shrink, timeSlow, le
     WIN.blit(BG, (0, 0))
     if(timeSlow):
         draw_rect_alpha(WIN, pygame.Color(128, 0, 128, 90), pygame.Rect(0,0,WIDTH, HEIGHT))
-    if(maxHp <= 14):
-        for i in range(maxHp):
-            if(health > i):
-                WIN.blit(FULL_HEART, (WIDTH - (WIDTH / 15) * ((i) * (0.9)) - WIDTH / 60 - FULL_HEART.get_width(), 0))
+    if(maxHp + tempHearts <= 13):
+        for i in range(maxHp + tempHearts):
+            if(i < maxHp):
+                if(health > i):
+                    WIN.blit(FULL_HEART, (WIDTH - (HEART_WIDTH) * ((i) * (1.2)) - WIDTH / 60 - FULL_HEART.get_width(), 10))
+                else:
+                    WIN.blit(EMPTY_HEART, (WIDTH - (HEART_WIDTH) * ((i) * (1.2)) - WIDTH / 60 - EMPTY_HEART.get_width(), 10))
             else:
-                WIN.blit(EMPTY_HEART, (WIDTH - (WIDTH / 15) * ((i) * (0.9)) - WIDTH / 60 - EMPTY_HEART.get_width(), 0))
+                WIN.blit(TEMP_HEART, (WIDTH - (HEART_WIDTH) * ((i) * (1.2)) - WIDTH / 60 - TEMP_HEART.get_width(), 10))
+    elif(maxHp + tempHearts <= 40):
+        for i in range(maxHp + tempHearts):
+            if(i < maxHp):
+                if(health > i):
+                    WIN.blit(FULL_HEART, (WIDTH - (HEART_WIDTH) * ((i) * (0.4)) - WIDTH / 60 - FULL_HEART.get_width(), 10))
+                else:
+                    WIN.blit(EMPTY_HEART, (WIDTH - (HEART_WIDTH) * ((i) * (0.4)) - WIDTH / 60 - EMPTY_HEART.get_width(), 10))
+            else:
+                WIN.blit(TEMP_HEART, (WIDTH - (HEART_WIDTH) * ((i) * (0.4)) - WIDTH / 60 - TEMP_HEART.get_width(), 10))
     else:
-        for i in range(maxHp):
-            if(health > i):
-                WIN.blit(FULL_HEART, (WIDTH - (WIDTH / 15) * ((i) * (0.3)) - WIDTH / 60 - FULL_HEART.get_width(), 0))
+        for i in range(maxHp + tempHearts):
+            if(i < maxHp):
+                if(health > i):
+                    WIN.blit(FULL_HEART, (WIDTH - (HEART_WIDTH) * ((i) * (0.2)) - WIDTH / 60 - FULL_HEART.get_width(), 10))
+                else:
+                    WIN.blit(EMPTY_HEART, (WIDTH - (HEART_WIDTH) * ((i) * (0.2)) - WIDTH / 60 - EMPTY_HEART.get_width(), 10))
             else:
-                WIN.blit(EMPTY_HEART, (WIDTH - (WIDTH / 15) * ((i) * (0.3)) - WIDTH / 60 - EMPTY_HEART.get_width(), 0))
+                WIN.blit(TEMP_HEART, (WIDTH - (HEART_WIDTH) * ((i) * (0.2)) - WIDTH / 60 - TEMP_HEART.get_width(), 10))
 
 
     time_text = FONT.render(f"Time: {round(elapsed_time)}s", 1, "black")
@@ -365,9 +383,9 @@ def upgradeScreen(unlock_chance):
                 for q in range(len(nameSplit)):
                     splitUpgrade.append(nameSplit[q])
                 if(rarity != "unlock"):
-                    if(upgrade[i] <= 2): #upgrade spot
+                    if(upgrade[i] <= 3): #upgrade spot
                         splitUpgrade.append(f"{upgrade_stats[t]} => {upgrade_stats[t] + UPGRADE_STAT_AMOUNT[t] * rarity_increase[i]}")
-                    elif(upgrade[i] == 3):
+                    elif(upgrade[i] == 4):
                         if(health + UPGRADE_STAT_AMOUNT[t] * rarity_increase[i] >= maxHp):
                             splitUpgrade.append(f"{health} => {upgrade_stats[0]}")
                         else:
@@ -405,6 +423,7 @@ def giveAbility(clickedAbility, rarityIncrease):
     global health
     global luck
     global passiveHeal
+    global tempHearts
     global lockedUpgrades
     if(UPGRADE_LIST[clickedAbility] in lockedUpgrades):
         lockedUpgrades.remove(UPGRADE_LIST[clickedAbility])
@@ -415,14 +434,16 @@ def giveAbility(clickedAbility, rarityIncrease):
     elif(clickedAbility == 2):
         passiveHeal += Upgrade.passiveHealUp(rarityIncrease)
     elif(clickedAbility == 3):
-        health += Upgrade.healUp(rarityIncrease, maxHp, health)
+        tempHearts += Upgrade.increaseTempHearts(rarityIncrease)
     elif(clickedAbility == 4):
-        Upgrade.shield.duration += Upgrade.shieldIncrease(rarityIncrease)
+        health += Upgrade.healUp(rarityIncrease, maxHp, health)
     elif(clickedAbility == 5):
-        Upgrade.shrink.duration += Upgrade.shrinkIncrease(rarityIncrease)
+        Upgrade.shield.duration += Upgrade.shieldIncrease(rarityIncrease)
     elif(clickedAbility == 6):
+        Upgrade.shrink.duration += Upgrade.shrinkIncrease(rarityIncrease)
+    elif(clickedAbility == 7):
         Upgrade.timeSlow.duration += Upgrade.timeSlowIncrease(rarityIncrease)
-    upgrade_stats = [maxHp, luck, passiveHeal, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration] #upgrade spot
+    upgrade_stats = [maxHp, luck, passiveHeal, tempHearts, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration] #upgrade spot
 
 def roll_item(luck, unlock_chance):
     global finalRareRarity
@@ -505,6 +526,7 @@ def reset():
     global upgrade_stats
     global luck
     global passiveHeal
+    global tempHearts
     global lockedUpgrades
     luck = LUCK_STARTING_AMOUNT
     health = PLAYER_STARTING_HEALTH
@@ -512,7 +534,7 @@ def reset():
     Upgrade.shield.duration = 0
     Upgrade.shrink.duration = 0
     Upgrade.timeSlow.duration = 0
-    upgrade_stats = [maxHp, luck, passiveHeal, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration] #upgrade spot
+    upgrade_stats = [maxHp, luck, passiveHeal, tempHearts, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration] #upgrade spot
     lockedUpgrades = ["maxHp", "health", "shield", "shrink", "timeSlow"]
     print("Reset")
 
@@ -593,6 +615,7 @@ def run(level):
     global slime_left
     global slime_right
     global running
+    global tempHearts
 
     run = True
 
@@ -787,7 +810,10 @@ def run(level):
         if hit:
             if(not(shield)):
                 global health
-                health -= 1
+                if(tempHearts > 0):
+                    tempHearts -= 1
+                else:
+                    health -= 1
             hit = False
             if(health <= 0):
                 dead = True
