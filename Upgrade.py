@@ -15,9 +15,11 @@ class Upgrade:
         elif(rarity == "rare"):
             self.rarityNum = 2
         elif(rarity == "epic"):
-            self.rarityNum = 2
-        elif(rarity == "legendary"):
             self.rarityNum = 4
+        elif(rarity == "legendary"):
+            self.rarityNum = 8
+        elif(rarity == "mythic"):
+            self.rarityNum = 32
 
         if(type == "ability"):
             self.duration = amount
@@ -58,9 +60,13 @@ def shrinkIncrease(rarityIncrease):
 def timeSlowIncrease(rarityIncrease):
     return timeSlow.durationIncrease * rarityIncrease
 
+def increaseLuck(rarityIncrease):
+    return luckIncrease.amount * rarityIncrease
+
 
 hpIncrease = Upgrade("stat increase", "common", 1, None, None)
 heal = Upgrade("stat increase", "common", 3, None,  None)
+luckIncrease = Upgrade("stat increase", "common", 1, None, None)
 shield = Upgrade("ability", "common", SHIELD_UPGRADE_AMOUNT, 0, SHIELD_COOLDOWN)
 shrink = Upgrade("ability", "common", SHRINK_UPGRADE_AMOUNT, 0, SHRINK_COOLDOWN)
 timeSlow = Upgrade("ability", "common", TIME_SLOW_UPGRADE_AMOUNT, 0, TIME_SLOW_COOLDOWN)

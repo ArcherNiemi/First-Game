@@ -67,7 +67,7 @@ START_DELAY_BETWEEN_BULLETS = 2000
 START_AMOUNT_OF_BULLETS_PER_WAVE = 5
 START_LENGTH_OF_ROUNDS = 5
 
-UPGRADE_LIST = ["Hp Increase", "Heal", "Shield", "Shrink", "Time Slow"]
+UPGRADE_LIST = ["Hp Increase", "luck", "Heal", "Shield", "Shrink", "Time Slow"] #upgrade spot
 
 
 SHRINK_SIZE = 2
@@ -87,10 +87,10 @@ EPIC_POWER = 4
 LEGENDARY_POWER = 8
 MYTHIC_POWER = 32
 
-TOTAL_AMOUNT_OF_COMMON_UPGRADES = 5
-TOTAL_AMOUNT_OF_RARE_UPGRADES = 5
-TOTAL_AMOUNT_OF_EPIC_UPGRADES = 5
-TOTAL_AMOUNT_OF_LENGENDARY_UPGRADES = 5
+TOTAL_AMOUNT_OF_COMMON_UPGRADES = 6
+TOTAL_AMOUNT_OF_RARE_UPGRADES = 6
+TOTAL_AMOUNT_OF_EPIC_UPGRADES = 6
+TOTAL_AMOUNT_OF_LENGENDARY_UPGRADES = 6
 
 COOL_DOWN = 5
 
@@ -126,14 +126,13 @@ health = PLAYER_STARTING_HEALTH
 maxHp = PLAYER_STARTING_HEALTH
 running = True
 luck = LUCK_STARTING_AMOUNT
-
-upgrade_stats = [maxHp, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration]
-UPGRADE_STAT_AMOUNT = [1, 3, 0.25, 0.5, 0.75]
+ 
+upgrade_stats = [maxHp, luck, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration] #upgrade spot
+UPGRADE_STAT_AMOUNT = [Upgrade.hpIncrease.amount,Upgrade.luckIncrease.amount, Upgrade.heal.amount, Upgrade.shield.durationIncrease, Upgrade.shrink.durationIncrease, Upgrade.timeSlow.durationIncrease] #upgrade spot
 
 SPEED_AMOUNT = 2
 
-lockedUpgrades = ["maxHp", "health", "shield", "shrink", "timeSlow"]
-allUpgrades = ["maxHp", "health", "shield", "shrink", "timeSlow"]
+lockedUpgrades = UPGRADE_LIST.copy()
 
 currentDirection = slime_left
 
@@ -311,35 +310,37 @@ def upgradeScreen(unlock_chance):
         totalAmountOfNumbers = TOTAL_AMOUNT_OF_COMMON_UPGRADES - 1
 
         upgrade[i] = random.randint(0, totalAmountOfNumbers)
-
-        currentString = allUpgrades[upgrade[i]]
+        
+        print(upgrade[i])
+        print(UPGRADE_LIST)
+        currentString = UPGRADE_LIST[upgrade[i]]
         if(rarity == "unlock"):
             while(not(currentString in lockedUpgrades)):
                 upgrade[i] = random.randint(0, totalAmountOfNumbers)
-                currentString = allUpgrades[upgrade[i]]
+                currentString = UPGRADE_LIST[upgrade[i]]
         else:
             while(currentString in lockedUpgrades):
                 upgrade[i] = random.randint(0, totalAmountOfNumbers)
-                currentString = allUpgrades[upgrade[i]]
+                currentString = UPGRADE_LIST[upgrade[i]]
 
         if(rarity == "unlock"):
             if(i == 1):
                 while(upgrade[0] == upgrade[1] or not(currentString in lockedUpgrades)):
                     upgrade[1] = random.randint(0, totalAmountOfNumbers)
-                    currentString = allUpgrades[upgrade[1]]
+                    currentString = UPGRADE_LIST[upgrade[1]]
             elif(i == 2):
                 while(upgrade[0] == upgrade[2] or upgrade[1] == upgrade[2] or not(currentString in lockedUpgrades)):
                     upgrade[2] = random.randint(0, totalAmountOfNumbers)
-                    currentString = allUpgrades[upgrade[2]]
+                    currentString = UPGRADE_LIST[upgrade[2]]
         else:
             if(i == 1):
                 while(upgrade[0]== upgrade[1] or currentString in lockedUpgrades):
                     upgrade[1] = random.randint(0, totalAmountOfNumbers)
-                    currentString = allUpgrades[upgrade[1]]
+                    currentString = UPGRADE_LIST[upgrade[1]]
             elif(i == 2):
                 while(upgrade[0] == upgrade[2] or upgrade[1] == upgrade[2] or currentString in lockedUpgrades):
                     upgrade[2] = random.randint(0, totalAmountOfNumbers)
-                    currentString = allUpgrades[upgrade[2]]
+                    currentString = UPGRADE_LIST[upgrade[2]]
 
         pygame.draw.rect(WIN, "black", pygame.Rect(getUpgradeLocation(i) - UPGRADE_SIZE / 2, HEIGHT / 2 - UPGRADE_SIZE / 2, UPGRADE_SIZE, UPGRADE_SIZE))
         WIN.blit(FRAME, (getUpgradeLocation(i) - UPGRADE_SIZE / 2, HEIGHT / 2 - UPGRADE_SIZE / 2))
@@ -353,9 +354,9 @@ def upgradeScreen(unlock_chance):
                 for q in range(len(nameSplit)):
                     splitUpgrade.append(nameSplit[q])
                 if(rarity != "unlock"):
-                    if(upgrade[i] == 0):
+                    if(upgrade[i] <= 1): #upgrade spot
                         splitUpgrade.append(f"{upgrade_stats[t]} => {upgrade_stats[t] + UPGRADE_STAT_AMOUNT[t] * rarity_increase[i]}")
-                    elif(upgrade[i] == 1):
+                    elif(upgrade[i] == 2):
                         if(health + UPGRADE_STAT_AMOUNT[t] * rarity_increase[i] >= maxHp):
                             splitUpgrade.append(f"{health} => {upgrade_stats[0]}")
                         else:
@@ -391,19 +392,23 @@ def giveAbility(clickedAbility, rarityIncrease):
     global upgrade_stats
     global maxHp
     global health
-    if(allUpgrades[clickedAbility] in lockedUpgrades):
-        lockedUpgrades.remove(allUpgrades[clickedAbility])
-    if(clickedAbility == 0):
+    global luck
+    global lockedUpgrades
+    if(UPGRADE_LIST[clickedAbility] in lockedUpgrades):
+        lockedUpgrades.remove(UPGRADE_LIST[clickedAbility])
+    if(clickedAbility == 0): #upgrade spot
         maxHp += Upgrade.increaseHp(rarityIncrease)
     elif(clickedAbility == 1):
-        health += Upgrade.healUp(rarityIncrease, maxHp, health)
+        luck += Upgrade.increaseLuck(rarityIncrease)
     elif(clickedAbility == 2):
-        Upgrade.shield.duration += Upgrade.shieldIncrease(rarityIncrease)
+        health += Upgrade.healUp(rarityIncrease, maxHp, health)
     elif(clickedAbility == 3):
-        Upgrade.shrink.duration += Upgrade.shrinkIncrease(rarityIncrease)
+        Upgrade.shield.duration += Upgrade.shieldIncrease(rarityIncrease)
     elif(clickedAbility == 4):
+        Upgrade.shrink.duration += Upgrade.shrinkIncrease(rarityIncrease)
+    elif(clickedAbility == 5):
         Upgrade.timeSlow.duration += Upgrade.timeSlowIncrease(rarityIncrease)
-    upgrade_stats = [maxHp, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration]
+    upgrade_stats = [maxHp, luck, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration] #upgrade spot
 
 def roll_item(luck, unlock_chance):
     global finalRareRarity
@@ -492,7 +497,7 @@ def reset():
     Upgrade.shield.duration = 0
     Upgrade.shrink.duration = 0
     Upgrade.timeSlow.duration = 0
-    upgrade_stats = [maxHp, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration]
+    upgrade_stats = [maxHp, luck, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration] #upgrade spot
     lockedUpgrades = ["maxHp", "health", "shield", "shrink", "timeSlow"]
     print("Reset")
 
@@ -637,12 +642,12 @@ def run(level):
             player.width *= SHRINK_SIZE
             player.height *= SHRINK_SIZE
             if(currentDirection == slime_left):
-                slime_left = pygame.transform.scale(pygame.image.load("Slime_Left.png"), (SLIME_WIDTH, SLIME_HEIGHT))
-                slime_right = pygame.transform.scale(pygame.image.load("Slime_Right.png"), (SLIME_WIDTH, SLIME_HEIGHT))
+                slime_left = pygame.transform.scale(pygame.image.load("images/Slime_Left.png"), (SLIME_WIDTH, SLIME_HEIGHT))
+                slime_right = pygame.transform.scale(pygame.image.load("images/Slime_Right.png"), (SLIME_WIDTH, SLIME_HEIGHT))
                 currentDirection = slime_left
             elif(currentDirection == slime_right):
-                slime_left = pygame.transform.scale(pygame.image.load("Slime_Left.png"), (SLIME_WIDTH, SLIME_HEIGHT))
-                slime_right = pygame.transform.scale(pygame.image.load("Slime_Right.png"), (SLIME_WIDTH, SLIME_HEIGHT))
+                slime_left = pygame.transform.scale(pygame.image.load("images/Slime_Left.png"), (SLIME_WIDTH, SLIME_HEIGHT))
+                slime_right = pygame.transform.scale(pygame.image.load("images/Slime_Right.png"), (SLIME_WIDTH, SLIME_HEIGHT))
                 currentDirection = slime_right
             player.y = HEIGHT - player.height
             currentPlayerVelocity = PLAYER_VELOCITY
@@ -697,12 +702,12 @@ def run(level):
             player.width /= SHRINK_SIZE
             player.height /= SHRINK_SIZE
             if(currentDirection == slime_left):
-                slime_left = pygame.transform.scale(pygame.image.load("Slime_Left.png"), (SLIME_WIDTH / SHRINK_SIZE, SLIME_HEIGHT / SHRINK_SIZE))
-                slime_right = pygame.transform.scale(pygame.image.load("Slime_Right.png"), (SLIME_WIDTH / SHRINK_SIZE, SLIME_HEIGHT / SHRINK_SIZE))
+                slime_left = pygame.transform.scale(pygame.image.load("images/Slime_Left.png"), (SLIME_WIDTH / SHRINK_SIZE, SLIME_HEIGHT / SHRINK_SIZE))
+                slime_right = pygame.transform.scale(pygame.image.load("images/Slime_Right.png"), (SLIME_WIDTH / SHRINK_SIZE, SLIME_HEIGHT / SHRINK_SIZE))
                 currentDirection = slime_left
             elif(currentDirection == slime_right):
-                slime_left = pygame.transform.scale(pygame.image.load("Slime_Left.png"), (SLIME_WIDTH / SHRINK_SIZE, SLIME_HEIGHT / SHRINK_SIZE))
-                slime_right = pygame.transform.scale(pygame.image.load("Slime_Right.png"), (SLIME_WIDTH / SHRINK_SIZE, SLIME_HEIGHT / SHRINK_SIZE))
+                slime_left = pygame.transform.scale(pygame.image.load("images/Slime_Left.png"), (SLIME_WIDTH / SHRINK_SIZE, SLIME_HEIGHT / SHRINK_SIZE))
+                slime_right = pygame.transform.scale(pygame.image.load("images/Slime_Right.png"), (SLIME_WIDTH / SHRINK_SIZE, SLIME_HEIGHT / SHRINK_SIZE))
                 currentDirection = slime_right
 
             player.y = HEIGHT - player.height
