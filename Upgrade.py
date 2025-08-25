@@ -1,11 +1,13 @@
 SHIELD_UPGRADE_AMOUNT = 0.25
 SHRINK_UPGRADE_AMOUNT = 0.5
 TIME_SLOW_UPGRADE_AMOUNT = 0.75
+SCREEN_WIPE_UPGRADE_AMOUNT = 0.125
 
 
 SHIELD_COOLDOWN = 5
 SHRINK_COOLDOWN = 5
 TIME_SLOW_COOLDOWN = 5
+SCREEN_WIPE_COOLDOWN = 5
 
 class Upgrade:
     def __init__(self, type: str, rarity: str, amountIncrease: float, amount: float, coolDown: float):
@@ -69,6 +71,9 @@ def shrinkIncrease(rarityIncrease):
 def timeSlowIncrease(rarityIncrease):
     return timeSlow.durationIncrease * rarityIncrease
 
+def screenWipeIncrease(rarityIncrease):
+    return screenWipe.durationIncrease * rarityIncrease
+
 
 
 hpIncrease = Upgrade("stat increase", "common", 1, None, None)
@@ -79,3 +84,4 @@ heal = Upgrade("stat increase", "common", 3, None,  None)
 shield = Upgrade("ability", "common", SHIELD_UPGRADE_AMOUNT, 0, SHIELD_COOLDOWN)
 shrink = Upgrade("ability", "common", SHRINK_UPGRADE_AMOUNT, 0, SHRINK_COOLDOWN)
 timeSlow = Upgrade("ability", "common", TIME_SLOW_UPGRADE_AMOUNT, 0, TIME_SLOW_COOLDOWN)
+screenWipe = Upgrade("ability", "legendary", SCREEN_WIPE_UPGRADE_AMOUNT, 0, SCREEN_WIPE_COOLDOWN)
