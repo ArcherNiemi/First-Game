@@ -41,6 +41,7 @@ SHIELD_FULL = pygame.transform.scale(pygame.image.load("images/Blue_Force_Field_
 CLOCK = pygame.transform.scale(pygame.image.load("images/Time Clock Black Icon - 1000x1000.png"), (ABILITY_SIZE, ABILITY_SIZE))
 SHRINK = pygame.transform.scale(pygame.image.load("images/resize-option.png"), (ABILITY_SIZE, ABILITY_SIZE))
 SCREEN_WIPE = pygame.transform.scale(pygame.image.load("images/Screen_Wipe.png"), (ABILITY_SIZE, ABILITY_SIZE))
+TYPE_DECREASE = pygame.transform.scale(pygame.image.load("images/type_decrease.png"), (ABILITY_SIZE, ABILITY_SIZE))
 BULLET = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("images/bullets-png-22781(1).png"), (BULLET_HEIGHT + 10, BULLET_WIDTH + 2)), -90)
 SPEED_BULLET = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("images/speed_bullet.png"), (BULLET_HEIGHT + 10, BULLET_WIDTH + 2)), -90)
 EXPLODING_BULLET = pygame.transform.rotate(pygame.transform.scale(pygame.image.load("images/exploding_bullet.png"), (BULLET_HEIGHT + 10, BULLET_WIDTH + 2)), -90)
@@ -74,7 +75,7 @@ START_DELAY_BETWEEN_BULLETS = 2000
 START_AMOUNT_OF_BULLETS_PER_WAVE = 5
 START_LENGTH_OF_ROUNDS = 5
 
-UPGRADE_LIST = ["Hp Increase", "Luck", "Passive Heal", "Temp Hearts", "Heal", "Shield", "Shrink", "Time Slow", "Screen Wipe"] #upgrade spot
+UPGRADE_LIST = ["Hp Increase", "Luck", "Passive Heal", "Temp Hearts", "Heal", "Shield", "Shrink", "Time Slow", "Type Decrease", "Screen Wipe"] #upgrade spot
 
 
 SHRINK_SIZE = 2
@@ -96,9 +97,9 @@ MYTHIC_POWER = 32
 
 TOTAL_AMOUNT_OF_COMMON_UPGRADES = 8 #upgrade spot
 TOTAL_AMOUNT_OF_RARE_UPGRADES = 8
-TOTAL_AMOUNT_OF_EPIC_UPGRADES = 8
-TOTAL_AMOUNT_OF_LEGENDARY_UPGRADES = 9
-TOTAL_AMOUNT_OF_MYTHIC_UPGRADES = 9
+TOTAL_AMOUNT_OF_EPIC_UPGRADES = 9
+TOTAL_AMOUNT_OF_LEGENDARY_UPGRADES = 10
+TOTAL_AMOUNT_OF_MYTHIC_UPGRADES = 10
 
 COOL_DOWN = 5
 
@@ -118,7 +119,7 @@ MAX_HOMING = 4
 MAX_ANGLE = 20
 HOMING_INCREASE = 30
 
-LUCK_STARTING_AMOUNT = 500
+LUCK_STARTING_AMOUNT = 1
 LUCK_SCALING = 0.25 #higher is stronger luck scaling
 
 finalRareRarity = 0
@@ -136,8 +137,8 @@ luck = LUCK_STARTING_AMOUNT
 passiveHeal = 0
 tempHearts = 0
  
-upgrade_stats = [maxHp, luck, passiveHeal, tempHearts, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration, Upgrade.screenWipe.duration] #upgrade spot
-UPGRADE_STAT_AMOUNT = [Upgrade.hpIncrease.amount, Upgrade.luckIncrease.amount, Upgrade.passiveHealIncrease.amount, Upgrade.tempHeartIncrease.amount, Upgrade.heal.amount, Upgrade.shield.durationIncrease, Upgrade.shrink.durationIncrease, Upgrade.timeSlow.durationIncrease, Upgrade.screenWipe.durationIncrease] #upgrade spot
+upgrade_stats = [maxHp, luck, passiveHeal, tempHearts, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration, Upgrade.typeDecrease.duration, Upgrade.screenWipe.duration] #upgrade spot
+UPGRADE_STAT_AMOUNT = [Upgrade.hpIncrease.amount, Upgrade.luckIncrease.amount, Upgrade.passiveHealIncrease.amount, Upgrade.tempHeartIncrease.amount, Upgrade.heal.amount, Upgrade.shield.durationIncrease, Upgrade.shrink.durationIncrease, Upgrade.timeSlow.durationIncrease, Upgrade.typeDecrease.durationIncrease, Upgrade.screenWipe.durationIncrease] #upgrade spot
 
 SPEED_AMOUNT = 2
 
@@ -151,7 +152,7 @@ INVENTORY_SLOTS = [(INVENTORY_CORNER_WIDTH + INVENTORY_PIXEL + INVENTORY_DEDUCTI
                    (INVENTORY_CORNER_WIDTH + INVENTORY_PIXEL * 25 + INVENTORY_DEDUCTION / 2, INVENTORY_CORNER_HEIGHT + INVENTORY_PIXEL + INVENTORY_DEDUCTION / 2), (INVENTORY_CORNER_WIDTH + INVENTORY_PIXEL * 25 + INVENTORY_DEDUCTION / 2, INVENTORY_CORNER_HEIGHT + INVENTORY_PIXEL * 8 + INVENTORY_DEDUCTION / 2), (INVENTORY_CORNER_WIDTH + INVENTORY_PIXEL * 25 + INVENTORY_DEDUCTION / 2, INVENTORY_CORNER_HEIGHT + INVENTORY_PIXEL * 15 + INVENTORY_DEDUCTION / 2)]
 INVENTORY_SLOT_SIZE = INVENTORY_PIXEL * 6
 
-inventoryLocations = [0,1,2,3]
+inventoryLocations = [3,4,5,6,7] #upgrade spot
 
 lockedUpgrades = UPGRADE_LIST.copy()
 
@@ -159,7 +160,7 @@ currentDirection = slime_left
 
 running = True
 
-def draw(player, elapsed_time, bullets, explosions, shield, shrink, timeSlow, screenWipe, level, currentShieldCoolDown, currentShrinkCoolDown, currentTimeSlowCoolDown, currentScreenWipeCoolDown, shrink_time, shield_time, timeSlow_time, screenWipe_time):
+def draw(player, elapsed_time, bullets, explosions, shield, shrink, timeSlow, screenWipe, typeDecrease, level, currentShieldCoolDown, currentShrinkCoolDown, currentTimeSlowCoolDown, currentScreenWipeCoolDown, currentTypeDecreaseCoolDown, shrink_time, shield_time, timeSlow_time, screenWipe_time, typeDecrease_time):
     pygame.draw.rect(WIN, "red", player)
     for bullet in bullets:
         pygame.draw.rect(WIN, "black", bullet.hitBox)
@@ -201,13 +202,13 @@ def draw(player, elapsed_time, bullets, explosions, shield, shrink, timeSlow, sc
     WIN.blit(time_text, (10, 10))
     level_text = FONT.render(f"Level: {level}", 1, "black")
     WIN.blit(level_text, (10, 15 + time_text.get_height()))
-    for i in range(3):
+    for i in range(3): #Upgrade Spot
         if(inventoryLocations[0] == i):
             WIN.blit(SHIELD_FULL, (10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i))
             if(Upgrade.shield.duration <= 0):
                 draw_rect_alpha(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE))
             elif(currentShieldCoolDown > 0):
-                draw_transparent_arc(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * currentShieldCoolDown)/ COOL_DOWN)
+                draw_transparent_arc(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * currentShieldCoolDown) / COOL_DOWN)
             elif(shield):
                 draw_transparent_arc(WIN, pygame.Color(0, 255, 0, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * (shield_time - elapsed_time + Upgrade.shield.duration))/Upgrade.shield.duration)
         elif(inventoryLocations[1] == i):
@@ -215,7 +216,7 @@ def draw(player, elapsed_time, bullets, explosions, shield, shrink, timeSlow, sc
             if(Upgrade.shrink.duration <= 0):
                 draw_rect_alpha(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE))
             elif(currentShrinkCoolDown > 0):
-                draw_transparent_arc(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * currentShrinkCoolDown)/ COOL_DOWN)
+                draw_transparent_arc(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * currentShrinkCoolDown) / COOL_DOWN)
             elif(shrink):
                 draw_transparent_arc(WIN, pygame.Color(0, 255, 0, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * (shrink_time - elapsed_time + Upgrade.shrink.duration))/ Upgrade.shrink.duration)
         elif(inventoryLocations[2] == i):
@@ -223,15 +224,23 @@ def draw(player, elapsed_time, bullets, explosions, shield, shrink, timeSlow, sc
             if(Upgrade.timeSlow.duration <= 0):
                 draw_rect_alpha(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE))
             elif(currentTimeSlowCoolDown > 0):
-                draw_transparent_arc(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * currentTimeSlowCoolDown)/ COOL_DOWN)
+                draw_transparent_arc(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * currentTimeSlowCoolDown) / COOL_DOWN)
             elif(timeSlow):
                 draw_transparent_arc(WIN, pygame.Color(0, 255, 0, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * (timeSlow_time - time.time() + Upgrade.timeSlow.duration))/ Upgrade.timeSlow.duration)
         elif(inventoryLocations[3] == i):
+            WIN.blit(TYPE_DECREASE, (10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i))
+            if(Upgrade.typeDecrease.duration <= 0):
+                draw_rect_alpha(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE))
+            elif(currentTypeDecreaseCoolDown > 0):
+                draw_transparent_arc(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * currentTypeDecreaseCoolDown) / COOL_DOWN)
+            elif(typeDecrease):
+                draw_transparent_arc(WIN, pygame.Color(0, 255, 0, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * (typeDecrease_time - elapsed_time + Upgrade.typeDecrease.duration))/ Upgrade.typeDecrease.duration)
+        elif(inventoryLocations[4] == i):
             WIN.blit(SCREEN_WIPE, (10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i))
             if(Upgrade.screenWipe.duration <= 0):
                 draw_rect_alpha(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE))
             elif(currentScreenWipeCoolDown > 0):
-                draw_transparent_arc(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * currentScreenWipeCoolDown)/ COOL_DOWN)
+                draw_transparent_arc(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * currentScreenWipeCoolDown) / COOL_DOWN)
             elif(screenWipe):
                 draw_transparent_arc(WIN, pygame.Color(0, 255, 0, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * (screenWipe_time - elapsed_time + Upgrade.screenWipe.duration))/ Upgrade.screenWipe.duration)
     
@@ -293,11 +302,11 @@ def startScreen():
     WIN.blit(title_text, (WIDTH/2 - title_text.get_width()/2, HEIGHT/4 - title_text.get_height()/2))
     start_text = FONT_START.render("Press Space To Start", 1, "white")
     WIN.blit(start_text, (WIDTH/2 - start_text.get_width()/2, HEIGHT/2 - start_text.get_height()/2))
-    buttons_text = FONT_BUTTONS.render("Shield = 1", 1, "white")
+    buttons_text = FONT_BUTTONS.render("Ability1 = 1", 1, "white")
     WIN.blit(buttons_text, (WIDTH/4 - buttons_text.get_width()/2, HEIGHT/(1 + 1/6) - buttons_text.get_height()/2))
-    buttons_text = FONT_BUTTONS.render("Shrink = 2", 1, "white")
+    buttons_text = FONT_BUTTONS.render("Ability2 = 2", 1, "white")
     WIN.blit(buttons_text, (WIDTH/(4/2) - buttons_text.get_width()/2, HEIGHT/(1 + 1/6) - buttons_text.get_height()/2))
-    buttons_text = FONT_BUTTONS.render("Time Slow = 3", 1, "white")
+    buttons_text = FONT_BUTTONS.render("Ability3 = 3", 1, "white")
     WIN.blit(buttons_text, (WIDTH/(4/3) - buttons_text.get_width()/2, HEIGHT/(1 + 1/6) - buttons_text.get_height()/2))
     pygame.display.update()
 
@@ -370,6 +379,25 @@ def upgradeScreen(unlock_chance):
             upgradeColor = "white"
             totalAmountOfNumbers = TOTAL_AMOUNT_OF_COMMON_UPGRADES - 1
 
+        count = 0
+        for w in range(totalAmountOfNumbers):
+            if(i == 0):
+                if(not(UPGRADE_LIST[w] in lockedUpgrades)):
+                    count += 1
+            elif(i == 1):
+                if(not(UPGRADE_LIST[w] in lockedUpgrades) and w != upgrade[0]):
+                    count += 1
+            elif(i == 2):
+                if(not(UPGRADE_LIST[w] in lockedUpgrades) and w != upgrade[0] and w != upgrade[1]):
+                    count += 1
+        
+        if(count == 0):
+            rarity = "unlock"
+            rarity_increase[i] = 0
+            upgradeColor = (30, 200, 255)
+            totalAmountOfNumbers = TOTAL_AMOUNT_OF_MYTHIC_UPGRADES - 1
+
+
         upgrade[i] = random.randint(0, totalAmountOfNumbers)
         
         print(upgrade[i])
@@ -395,7 +423,7 @@ def upgradeScreen(unlock_chance):
                     currentString = UPGRADE_LIST[upgrade[2]]
         else:
             if(i == 1):
-                while(upgrade[0]== upgrade[1] or currentString in lockedUpgrades):
+                while(upgrade[0] == upgrade[1] or currentString in lockedUpgrades):
                     upgrade[1] = random.randint(0, totalAmountOfNumbers)
                     currentString = UPGRADE_LIST[upgrade[1]]
             elif(i == 2):
@@ -477,8 +505,10 @@ def giveAbility(clickedAbility, rarityIncrease):
     elif(clickedAbility == 7):
         Upgrade.timeSlow.duration += Upgrade.timeSlowIncrease(rarityIncrease)
     elif(clickedAbility == 8):
+        Upgrade.typeDecrease.duration += Upgrade.typeDecreaseIncrease(rarityIncrease)
+    elif(clickedAbility == 9):
         Upgrade.screenWipe.duration += Upgrade.screenWipeIncrease(rarityIncrease)
-    upgrade_stats = [maxHp, luck, passiveHeal, tempHearts, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration, Upgrade.screenWipe.duration] #upgrade spot
+    upgrade_stats = [maxHp, luck, passiveHeal, tempHearts, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration, Upgrade.typeDecrease.duration, Upgrade.screenWipe.duration] #upgrade spot
 
 def roll_item(luck, unlock_chance):
     global finalRareRarity
@@ -539,10 +569,12 @@ def inventoryScreen():
     shrinkLocation = (WIDTH, HEIGHT)
     timeSlowLocation = (WIDTH, HEIGHT)
     screenWipeLocation = (WIDTH, HEIGHT)
+    typeDecreaseLocation = (WIDTH, HEIGHT)
     shieldSlot = 100
     shrinkSlot = 100
     timeSlowSlot = 100
     screenWipeSlot = 100
+    typeDecreaseSlot = 100
     if(not("Shield" in lockedUpgrades)):
         shieldLocation = INVENTORY_SLOTS[inventoryLocations[0]]
         shieldSlot = inventoryLocations[0]
@@ -555,11 +587,15 @@ def inventoryScreen():
         timeSlowLocation = INVENTORY_SLOTS[inventoryLocations[2]]
         timeSlowSlot = inventoryLocations[2]
         locations[inventoryLocations[2]] = "timeSlow"
+    if(not("Type Decrease" in lockedUpgrades)):
+        typeDecreaseLocation = INVENTORY_SLOTS[inventoryLocations[3]]
+        typeDecreaseSlot = inventoryLocations[3]
+        locations[inventoryLocations[3]] = "typeDecrease"
     if(not("Screen Wipe" in lockedUpgrades)):
-        screenWipeLocation = INVENTORY_SLOTS[inventoryLocations[3]]
-        screenWipeSlot = inventoryLocations[3]
-        locations[inventoryLocations[3]] = "screenWipe"
-    inventoryDraw(shieldLocation, shrinkLocation, timeSlowLocation, screenWipeLocation)
+        screenWipeLocation = INVENTORY_SLOTS[inventoryLocations[4]]
+        screenWipeSlot = inventoryLocations[4]
+        locations[inventoryLocations[4]] = "screenWipe"
+    inventoryDraw(shieldLocation, shrinkLocation, timeSlowLocation, typeDecreaseLocation, screenWipeLocation)
     run = True
     while run:
         for event in pygame.event.get():
@@ -568,7 +604,16 @@ def inventoryScreen():
                 run = False
                 pygame.quit()
             elif keys[pygame.K_SPACE]:
-                inventoryLocations = [shieldSlot, shrinkSlot, timeSlowSlot, screenWipeSlot]
+                if(not("Shield" in lockedUpgrades)):
+                    inventoryLocations[0] = shieldSlot
+                if(not("Shrink" in lockedUpgrades)):
+                    inventoryLocations[1] = shrinkSlot
+                if(not("Time Slow" in lockedUpgrades)):
+                    inventoryLocations[2] = timeSlowSlot
+                if(not("Type Decrease" in lockedUpgrades)):
+                    inventoryLocations[3] = typeDecreaseSlot
+                if(not("Screen Wipe" in lockedUpgrades)):
+                    inventoryLocations[4] = screenWipeSlot
                 run = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 clickpos = event.pos
@@ -594,6 +639,9 @@ def inventoryScreen():
                                                 elif(locations[i * 3 + t] == "timeSlow"):
                                                     timeSlowLocation = INVENTORY_SLOTS[p + 3]
                                                     timeSlowSlot = p + 3
+                                                elif(locations[i * 3 + t] == "typeDecrease"):
+                                                    typeDecreaseLocation = INVENTORY_SLOTS[p + 3]
+                                                    typeDecreaseSlot = p + 3
                                                 elif(locations[i * 3 + t] == "screenWipe"):
                                                     screenWipeLocation = INVENTORY_SLOTS[p + 3]
                                                     screenWipeSlot = p + 3
@@ -611,21 +659,25 @@ def inventoryScreen():
                                                 elif(locations[i * 3 + t] == "timeSlow"):
                                                     timeSlowLocation = INVENTORY_SLOTS[p]
                                                     timeSlowSlot = p
+                                                elif(locations[i * 3 + t] == "typeDecrease"):
+                                                    typeDecreaseLocation = INVENTORY_SLOTS[p]
+                                                    typeDecreaseSlot = p
                                                 elif(locations[i * 3 + t] == "screenWipe"):
                                                     screenWipeLocation = INVENTORY_SLOTS[p]
                                                     screenWipeSlot = p
                                                 locations[p] = locations[i * 3 + t]
                                                 locations[i * 3 + t] = "none"
-                    inventoryDraw(shieldLocation, shrinkLocation, timeSlowLocation, screenWipeLocation)
+                    inventoryDraw(shieldLocation, shrinkLocation, timeSlowLocation, typeDecreaseLocation, screenWipeLocation)
                 
 
-def inventoryDraw(shieldLocation, shrinkLocation, timeSlowLocation, screenWipeLocation):
+def inventoryDraw(shieldLocation, shrinkLocation, timeSlowLocation,typeDecreaseLocation, screenWipeLocation):
     WIN.blit(BG, (0, 0))
     WIN.blit(INVENTORY, (WIDTH / 2 - INVENTORY_WIDTH / 2, HEIGHT / 2 - INVENTORY_HEIGHT / 2))
     WIN.blit(pygame.transform.scale(SHIELD_FULL, (INVENTORY_PIXEL * 6 - INVENTORY_DEDUCTION, INVENTORY_PIXEL * 6 - INVENTORY_DEDUCTION)), (shieldLocation))
     WIN.blit(pygame.transform.scale(SHRINK, (INVENTORY_PIXEL * 6 - INVENTORY_DEDUCTION, INVENTORY_PIXEL * 6 - INVENTORY_DEDUCTION)), (shrinkLocation))
     WIN.blit(pygame.transform.scale(CLOCK, (INVENTORY_PIXEL * 6 - INVENTORY_DEDUCTION, INVENTORY_PIXEL * 6 - INVENTORY_DEDUCTION)), (timeSlowLocation))
     WIN.blit(pygame.transform.scale(SCREEN_WIPE, (INVENTORY_PIXEL * 6 - INVENTORY_DEDUCTION, INVENTORY_PIXEL * 6 - INVENTORY_DEDUCTION)), (screenWipeLocation))
+    WIN.blit(pygame.transform.scale(TYPE_DECREASE, (INVENTORY_PIXEL * 6 - INVENTORY_DEDUCTION, INVENTORY_PIXEL * 6 - INVENTORY_DEDUCTION)), (typeDecreaseLocation))
     pygame.display.update()
 
 def resetScreen():
@@ -665,7 +717,7 @@ def reset():
     Upgrade.shield.duration = 0
     Upgrade.shrink.duration = 0
     Upgrade.timeSlow.duration = 0
-    upgrade_stats = [maxHp, luck, passiveHeal, tempHearts, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration, Upgrade.screenWipe.duration] #upgrade spot
+    upgrade_stats = [maxHp, luck, passiveHeal, tempHearts, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration, Upgrade.typeDecrease.duration, Upgrade.screenWipe.duration] #upgrade spot
     lockedUpgrades = ["maxHp", "health", "shield", "shrink", "timeSlow"]
     print("Reset")
 
@@ -730,6 +782,7 @@ def main():
                 print(i)
         for i in range(4):
             upgradeScreen(1)
+        inventoryScreen()
         level = 1
         running = True
         while(running):
@@ -774,21 +827,25 @@ def run(level):
     currentShrinkCoolDown = 0
     currentTimeSlowCoolDown = 0
     currentScreenWipeCoolDown = 0
+    currentTypeDecreaseCoolDown = 0
 
     startShieldCoolDown = -COOL_DOWN
     startShrinkCoolDown = -COOL_DOWN
     startTimeSlowCoolDown = -COOL_DOWN
     startScreenWipeCoolDown = -COOL_DOWN
+    startTypeDecreaseCoolDown = -COOL_DOWN
 
     shield = False
     shrink = False
     timeSlow = False
     screenWipe = False
+    typeDecrease = False
 
     shield_time = 0
     shrink_time = 0
     timeSlow_time = 0
     screenWipe_time = 0
+    typeDecrease_time = 0
 
     currentPlayerVelocity = PLAYER_VELOCITY
     amountOfTimeSlow = 0
@@ -844,13 +901,21 @@ def run(level):
             startScreenWipeCoolDown = elapsed_time
         else:
             currentScreenWipeCoolDown = startScreenWipeCoolDown - elapsed_time + COOL_DOWN
+        if(typeDecrease and elapsed_time - typeDecrease_time >= Upgrade.typeDecrease.duration):
+            typeDecrease = False
+            startTypeDecreaseCoolDown = elapsed_time
+        else:
+            currentTypeDecreaseCoolDown = startTypeDecreaseCoolDown - elapsed_time + COOL_DOWN
 
         currentAmountOfTimeAfterScreenWipe = elapsed_time - startAmountOfTimeAfterScreenWipe
         if(elapsed_time < START_LENGTH_OF_ROUNDS * difficulty):
             if bullet_count > bullet_add_increment:
                 for _ in range(random.randint(int(round(START_AMOUNT_OF_BULLETS_PER_WAVE * difficulty)/2), int(round(START_AMOUNT_OF_BULLETS_PER_WAVE * difficulty)))):
                     bullet_x = random.randint(0, WIDTH - BULLET_WIDTH)
-                    bullet_type = chooseType(level)
+                    if(typeDecrease):
+                        bullet_type = ["normal",""]
+                    else:
+                        bullet_type = chooseType(level)
                     print(bullet_type)
                     for i in range(len(bullet_type)):
                         if(bullet_type[i] == "speed"):
@@ -879,6 +944,7 @@ def run(level):
         shrinkNum = False
         timeSlowNum = False
         screenWipeNum = False
+        typeDecreaseNum = False
         for i in range(12):
             if(inventoryLocations[0] == i):
                 shieldNum = keyNumbers[i]
@@ -888,6 +954,8 @@ def run(level):
                 timeSlowNum = keyNumbers[i]
             elif(inventoryLocations[3] == i):
                 screenWipeNum = keyNumbers[i]
+            elif(inventoryLocations[4] == i):
+                typeDecreaseNum = keyNumbers[i]
         if shieldNum and currentShieldCoolDown <= 0 and not(shield) and Upgrade.shield.duration > 0:
             shield = True
             shield_time = elapsed_time
@@ -916,6 +984,9 @@ def run(level):
             screenWipe_time = elapsed_time
             bullets.clear()
             startAmountOfTimeAfterScreenWipe = 0 
+        if typeDecreaseNum and currentTypeDecreaseCoolDown <= 0 and not(typeDecrease) and Upgrade.typeDecrease.duration > 0:
+            typeDecrease = True
+            typeDecrease_time = elapsed_time
         if keys[pygame.K_LEFT] and player.x - currentPlayerVelocity >= 0:
             player.x -= currentPlayerVelocity
             currentDirection = slime_left
@@ -983,7 +1054,7 @@ def run(level):
             if(health <= 0):
                 dead = True
 
-        draw(player, elapsed_time, bullets, explosions, shield, shrink, timeSlow, screenWipe, level, currentShieldCoolDown, currentShrinkCoolDown, currentTimeSlowCoolDown, currentScreenWipeCoolDown, shrink_time, shield_time, timeSlow_time, screenWipe_time)
+        draw(player, elapsed_time, bullets, explosions, shield, shrink, timeSlow, screenWipe, typeDecrease, level, currentShieldCoolDown, currentShrinkCoolDown, currentTimeSlowCoolDown, currentScreenWipeCoolDown, currentTypeDecreaseCoolDown, shrink_time, shield_time, timeSlow_time, screenWipe_time, typeDecrease_time)
 
         if dead:
             lost_text = FONT_END.render("You Lost", 1, "black")
