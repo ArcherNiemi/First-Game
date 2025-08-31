@@ -77,7 +77,7 @@ def screenWipeIncrease(rarityIncrease):
     return screenWipe.durationIncrease * rarityIncrease
 
 def typeDecreaseIncrease(rarityIncrease):
-    return screenWipe.durationIncrease * rarityIncrease
+    return typeDecrease.durationIncrease * rarityIncrease
 
 
 
