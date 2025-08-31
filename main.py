@@ -7,6 +7,9 @@ import Upgrade
 import Bullet
 import Explosion
 import math
+import csv
+import pandas as pd
+import ast
 
 pygame.font.init()
 
@@ -157,6 +160,9 @@ inventoryLocations = [3,4,5,6,7] #upgrade spot
 lockedUpgrades = UPGRADE_LIST.copy()
 
 currentDirection = slime_left
+
+saveData = [["level", "upgrades", "locked upgrades"],
+            [0 ,upgrade_stats, lockedUpgrades]]
 
 running = True
 
@@ -711,14 +717,18 @@ def reset():
     global passiveHeal
     global tempHearts
     global lockedUpgrades
-    luck = LUCK_STARTING_AMOUNT
-    health = PLAYER_STARTING_HEALTH
     maxHp = PLAYER_STARTING_HEALTH
+    luck = LUCK_STARTING_AMOUNT
+    passiveHeal = 0
+    tempHearts = 0
+    health = PLAYER_STARTING_HEALTH
     Upgrade.shield.duration = 0
     Upgrade.shrink.duration = 0
     Upgrade.timeSlow.duration = 0
+    Upgrade.typeDecrease.duration = 0
+    Upgrade.screenWipe.duration = 0
     upgrade_stats = [maxHp, luck, passiveHeal, tempHearts, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration, Upgrade.typeDecrease.duration, Upgrade.screenWipe.duration] #upgrade spot
-    lockedUpgrades = ["maxHp", "health", "shield", "shrink", "timeSlow"]
+    lockedUpgrades = UPGRADE_LIST.copy() #upgrade spot
     print("Reset")
 
 def chooseType(level):
@@ -770,20 +780,20 @@ def findAngle(player, bullet):
 
 
 
-def main():
+def main(startLevel):
     global running
     global luck
     global health
-    startScreen()
     while(True):
         if(luck != 0):
             for i in range(luck):
                 roll_item(i, UNLOCK_CHANCE)
                 print(i)
-        for i in range(5):
-            upgradeScreen(1)
+        if(len(lockedUpgrades) >= len(UPGRADE_LIST)):
+            for i in range(5):
+                upgradeScreen(1)
         inventoryScreen()
-        level = 1
+        level = startLevel
         running = True
         while(running):
             levelStart(level)
@@ -793,7 +803,43 @@ def main():
                 upgradeScreen(UNLOCK_CHANCE)
                 inventoryScreen()
             level += 1
+            saveGame(level)
         resetScreen()
+
+def saveGame(level):
+    saveData = [["level", "upgrades", "locked upgrades"],
+                [level ,upgrade_stats, lockedUpgrades]]
+    with open('saveData.csv', 'w', newline='') as csvfile:
+        # Create a writer object
+        csv_writer = csv.writer(csvfile)
+        # Write the header row
+        csv_writer.writerow(saveData[0])
+        # Write the data rows
+        csv_writer.writerows(saveData[1:])
+
+def continueGame():
+    global health #upgrade spot
+    global maxHp
+    global upgrade_stats
+    global luck
+    global passiveHeal
+    global tempHearts
+    global lockedUpgrades
+    df = pd.read_csv('saveData.csv')
+    print(df["level"][0])
+    upgrade_stats = ast.literal_eval(df["upgrades"][0]) #upgrade spot
+    maxHp = upgrade_stats[0]
+    luck = upgrade_stats[1]
+    passiveHeal = upgrade_stats[2]
+    tempHearts = upgrade_stats[3]
+    health = upgrade_stats[4]
+    Upgrade.shield.duration = upgrade_stats[5]
+    Upgrade.shrink.duration = upgrade_stats[6]
+    Upgrade.timeSlow.duration = upgrade_stats[7]
+    Upgrade.typeDecrease.duration = upgrade_stats[8]
+    Upgrade.screenWipe.duration = upgrade_stats[9]
+    lockedUpgrades = ast.literal_eval(df["locked upgrades"][0]) #upgrade spot
+    main(int(df["level"][0]))
 
 def run(level):
     global currentDirection
@@ -1068,4 +1114,4 @@ def run(level):
             running = False
 
 if __name__ == "__main__":
-    main()
+    continueGame()
