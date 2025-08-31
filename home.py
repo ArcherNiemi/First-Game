@@ -2,6 +2,7 @@ import main
 import pygame
 import csv
 import pandas as pd
+import os
 
 pygame.init()
 
@@ -21,9 +22,18 @@ PLAY_BOX_PIXIL = PLAY_BOX_SIZE / 100
 CONTINUE_LOCATION = (main.WIDTH - PLAY_BOX_PIXIL * 72, main.WIDTH - PLAY_BOX_PIXIL * 6, main.HEIGHT - PLAY_BOX_PIXIL * 56, main.HEIGHT - PLAY_BOX_PIXIL * 35)
 NEW_GAME_LOCATION = (main.WIDTH - PLAY_BOX_PIXIL * 72, main.WIDTH - PLAY_BOX_PIXIL * 6, main.HEIGHT - PLAY_BOX_PIXIL * 26, main.HEIGHT - PLAY_BOX_PIXIL * 6)
 
+local_appdata = os.getenv("LOCALAPPDATA")  # e.g., C:\Users\<User>\AppData\Local
+app_name = "BulletBarrage"
+app_folder = os.path.join(local_appdata, app_name)
+
+gameSaveData_path = os.path.join(app_folder, "gameSaveData.csv")
+allData_path = os.path.join(app_folder, "allData.csv")
+print(app_folder)
+
 def homePage():
     run = True
-    df = pd.read_csv('personalData.csv')
+    createFiles()
+    df = pd.read_csv(allData_path)
     amountOfGold = df["gold"][0]
     while(run):
         for event in pygame.event.get():
@@ -56,6 +66,18 @@ def homePageDraw(amountOfGold):
     main.WIN.blit(new_game_text, (main.WIDTH -  78 * PLAY_BOX.get_width() / 200 - new_game_text.get_width() / 2, main.HEIGHT - PLAY_BOX.get_height() * 0.15 - new_game_text.get_height() / 2))
 
     pygame.display.update()
+
+def createFiles():
+    if not(os.path.exists(app_folder)):
+        os.makedirs(app_folder, exist_ok=True)
+    if not(os.path.exists(gameSaveData_path)):
+        data = {"level": [0]}
+        df = pd.DataFrame(data)
+        df.to_csv(gameSaveData_path, index=False)
+    if not(os.path.exists(allData_path)):
+        data = {"gold": [0]}
+        df = pd.DataFrame(data)
+        df.to_csv(allData_path, index=False)
 
 if __name__ == "__main__":
     homePage()

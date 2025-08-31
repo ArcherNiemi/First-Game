@@ -10,6 +10,7 @@ import math
 import csv
 import pandas as pd
 import ast
+import os
 
 pygame.font.init()
 
@@ -161,8 +162,16 @@ lockedUpgrades = UPGRADE_LIST.copy()
 
 currentDirection = slime_left
 
-gameSaveData = [["level", "upgrades", "locked upgrades"],
-            [0 ,upgrade_stats, lockedUpgrades]]
+gameSaveData = {"level": [0],
+                "upgrades": [upgrade_stats], 
+                "locked upgrades": [lockedUpgrades]}
+
+local_appdata = os.getenv("LOCALAPPDATA")  # e.g., C:\Users\<User>\AppData\Local
+app_name = "BulletBarrage"
+app_folder = os.path.join(local_appdata, app_name)
+
+gameSaveData_path = os.path.join(app_folder, "gameSaveData.csv")
+allData_path = os.path.join(app_folder, "allData.csv")
 
 running = True
 
@@ -811,15 +820,11 @@ def main(startLevel):
         resetScreen()
 
 def saveGame(level):
-    gameSaveData = [["level", "upgrades", "locked upgrades"],
-                [level ,upgrade_stats, lockedUpgrades]]
-    with open('gameSaveData.csv', 'w', newline='') as csvfile:
-        # Create a writer object
-        csv_writer = csv.writer(csvfile)
-        # Write the header row
-        csv_writer.writerow(gameSaveData[0])
-        # Write the data rows
-        csv_writer.writerows(gameSaveData[1:])
+    gameSaveData = {"level": [level],
+                    "upgrades": [upgrade_stats], 
+                    "locked upgrades": [lockedUpgrades]}
+    df = pd.DataFrame(gameSaveData)
+    df.to_csv(gameSaveData_path, index=False)
 
 def continueGame():
     global health #upgrade spot
@@ -829,7 +834,7 @@ def continueGame():
     global passiveHeal
     global tempHearts
     global lockedUpgrades
-    df = pd.read_csv('gameSaveData.csv')
+    df = pd.read_csv(gameSaveData_path)
     print(df["level"][0])
     upgrade_stats = ast.literal_eval(df["upgrades"][0]) #upgrade spot
     maxHp = upgrade_stats[0]
@@ -847,27 +852,17 @@ def continueGame():
 
 def giveGold(level):
     amountOfGold = round(level ** 1.4)
-    df = pd.read_csv('personalData.csv')
+    df = pd.read_csv(allData_path)
     newAmountOfGold = amountOfGold + df["gold"][0]
-    personalData = [["gold"],
-               [newAmountOfGold]]
-    with open('personalData.csv', 'w', newline='') as csvfile:
-        # Create a writer object
-        csv_writer = csv.writer(csvfile)
-        # Write the header row
-        csv_writer.writerow(personalData[0])
-        # Write the data rows
-        csv_writer.writerows(personalData[1:])
+    allData = {"gold": [newAmountOfGold]}
+    df = pd.DataFrame(allData)
+    df.to_csv(allData_path, index=False)
 
-    gameSaveData = [["level", "upgrades", "locked upgrades"],
-                [0 ,[],[]]]
-    with open('gameSaveData.csv', 'w', newline='') as csvfile:
-        # Create a writer object
-        csv_writer = csv.writer(csvfile)
-        # Write the header row
-        csv_writer.writerow(gameSaveData[0])
-        # Write the data rows
-        csv_writer.writerows(gameSaveData[1:])
+    gameSaveData = {"level": [level],
+                    "upgrades": [upgrade_stats], 
+                    "locked upgrades": [lockedUpgrades]}
+    df = pd.DataFrame(gameSaveData)
+    df.to_csv(gameSaveData_path, index=False)
 
 def run(level):
     global currentDirection
