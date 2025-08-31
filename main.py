@@ -780,7 +780,7 @@ def main():
             for i in range(luck):
                 roll_item(i, UNLOCK_CHANCE)
                 print(i)
-        for i in range(4):
+        for i in range(5):
             upgradeScreen(1)
         inventoryScreen()
         level = 1
