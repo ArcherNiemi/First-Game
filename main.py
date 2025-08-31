@@ -953,9 +953,10 @@ def run(level):
             elif(inventoryLocations[2] == i):
                 timeSlowNum = keyNumbers[i]
             elif(inventoryLocations[3] == i):
-                screenWipeNum = keyNumbers[i]
-            elif(inventoryLocations[4] == i):
                 typeDecreaseNum = keyNumbers[i]
+            elif(inventoryLocations[4] == i):
+                screenWipeNum = keyNumbers[i]
+
         if shieldNum and currentShieldCoolDown <= 0 and not(shield) and Upgrade.shield.duration > 0:
             shield = True
             shield_time = elapsed_time
