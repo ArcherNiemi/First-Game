@@ -161,7 +161,7 @@ lockedUpgrades = UPGRADE_LIST.copy()
 
 currentDirection = slime_left
 
-saveData = [["level", "upgrades", "locked upgrades"],
+gameSaveData = [["level", "upgrades", "locked upgrades"],
             [0 ,upgrade_stats, lockedUpgrades]]
 
 running = True
@@ -511,7 +511,10 @@ def giveAbility(clickedAbility, rarityIncrease):
     elif(clickedAbility == 7):
         Upgrade.timeSlow.duration += Upgrade.timeSlowIncrease(rarityIncrease)
     elif(clickedAbility == 8):
+        print(rarityIncrease)
+        print(Upgrade.typeDecreaseIncrease(rarityIncrease))
         Upgrade.typeDecrease.duration += Upgrade.typeDecreaseIncrease(rarityIncrease)
+        print(Upgrade.typeDecrease.duration)
     elif(clickedAbility == 9):
         Upgrade.screenWipe.duration += Upgrade.screenWipeIncrease(rarityIncrease)
     upgrade_stats = [maxHp, luck, passiveHeal, tempHearts, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration, Upgrade.typeDecrease.duration, Upgrade.screenWipe.duration] #upgrade spot
@@ -804,18 +807,19 @@ def main(startLevel):
                 inventoryScreen()
             level += 1
             saveGame(level)
+        giveGold(level - 1)
         resetScreen()
 
 def saveGame(level):
-    saveData = [["level", "upgrades", "locked upgrades"],
+    gameSaveData = [["level", "upgrades", "locked upgrades"],
                 [level ,upgrade_stats, lockedUpgrades]]
-    with open('saveData.csv', 'w', newline='') as csvfile:
+    with open('gameSaveData.csv', 'w', newline='') as csvfile:
         # Create a writer object
         csv_writer = csv.writer(csvfile)
         # Write the header row
-        csv_writer.writerow(saveData[0])
+        csv_writer.writerow(gameSaveData[0])
         # Write the data rows
-        csv_writer.writerows(saveData[1:])
+        csv_writer.writerows(gameSaveData[1:])
 
 def continueGame():
     global health #upgrade spot
@@ -825,7 +829,7 @@ def continueGame():
     global passiveHeal
     global tempHearts
     global lockedUpgrades
-    df = pd.read_csv('saveData.csv')
+    df = pd.read_csv('gameSaveData.csv')
     print(df["level"][0])
     upgrade_stats = ast.literal_eval(df["upgrades"][0]) #upgrade spot
     maxHp = upgrade_stats[0]
@@ -840,6 +844,30 @@ def continueGame():
     Upgrade.screenWipe.duration = upgrade_stats[9]
     lockedUpgrades = ast.literal_eval(df["locked upgrades"][0]) #upgrade spot
     main(int(df["level"][0]))
+
+def giveGold(level):
+    amountOfGold = round(level ** 1.4)
+    df = pd.read_csv('personalData.csv')
+    newAmountOfGold = amountOfGold + df["gold"][0]
+    personalData = [["gold"],
+               [newAmountOfGold]]
+    with open('personalData.csv', 'w', newline='') as csvfile:
+        # Create a writer object
+        csv_writer = csv.writer(csvfile)
+        # Write the header row
+        csv_writer.writerow(personalData[0])
+        # Write the data rows
+        csv_writer.writerows(personalData[1:])
+
+    gameSaveData = [["level", "upgrades", "locked upgrades"],
+                [0 ,[],[]]]
+    with open('gameSaveData.csv', 'w', newline='') as csvfile:
+        # Create a writer object
+        csv_writer = csv.writer(csvfile)
+        # Write the header row
+        csv_writer.writerow(gameSaveData[0])
+        # Write the data rows
+        csv_writer.writerows(gameSaveData[1:])
 
 def run(level):
     global currentDirection
@@ -1108,10 +1136,12 @@ def run(level):
             WIN.blit(lost_text, (WIDTH/2 - lost_text.get_width()/2, HEIGHT/2 - lost_text.get_height()))
             lost_text = FONT_END.render(f"Levels Beaten: {level - 1}", 1, "black")
             WIN.blit(lost_text, (WIDTH/2 - lost_text.get_width()/2, HEIGHT/2))
+            gold_text = FONT_END.render(f"+{round(level ** 1.4)} gold", 1, "gold")
+            WIN.blit(gold_text, (WIDTH/2 - gold_text.get_width()/2, HEIGHT/2 + lost_text.get_height()))
             pygame.display.update()
             pygame.time.delay(3000)
             run = False
             running = False
 
 if __name__ == "__main__":
-    continueGame()
+    print("run from home.py")
