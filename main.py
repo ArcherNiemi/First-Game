@@ -79,7 +79,7 @@ START_DELAY_BETWEEN_BULLETS = 2000
 START_AMOUNT_OF_BULLETS_PER_WAVE = 5
 START_LENGTH_OF_ROUNDS = 5
 
-UPGRADE_LIST = ["Hp Increase", "Luck", "Passive Heal", "Temp Hearts", "Heal", "Shield", "Shrink", "Time Slow", "Type Decrease", "Screen Wipe"] #upgrade spot
+UPGRADE_LIST = ["Hp Increase", "Luck", "Passive Heal", "Temp Hearts", "Heal", "Shrink", "Time Slow", "Shield", "Type Decrease", "Screen Wipe"] #upgrade spot
 
 
 SHRINK_SIZE = 2
@@ -99,7 +99,7 @@ EPIC_POWER = 4
 LEGENDARY_POWER = 8
 MYTHIC_POWER = 32
 
-TOTAL_AMOUNT_OF_COMMON_UPGRADES = 8 #upgrade spot
+TOTAL_AMOUNT_OF_COMMON_UPGRADES = 7 #upgrade spot
 TOTAL_AMOUNT_OF_RARE_UPGRADES = 8
 TOTAL_AMOUNT_OF_EPIC_UPGRADES = 9
 TOTAL_AMOUNT_OF_LEGENDARY_UPGRADES = 10
@@ -141,8 +141,8 @@ luck = LUCK_STARTING_AMOUNT
 passiveHeal = 0
 tempHearts = 0
  
-upgrade_stats = [maxHp, luck, passiveHeal, tempHearts, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration, Upgrade.typeDecrease.duration, Upgrade.screenWipe.duration] #upgrade spot
-UPGRADE_STAT_AMOUNT = [Upgrade.hpIncrease.amount, Upgrade.luckIncrease.amount, Upgrade.passiveHealIncrease.amount, Upgrade.tempHeartIncrease.amount, Upgrade.heal.amount, Upgrade.shield.durationIncrease, Upgrade.shrink.durationIncrease, Upgrade.timeSlow.durationIncrease, Upgrade.typeDecrease.durationIncrease, Upgrade.screenWipe.durationIncrease] #upgrade spot
+upgrade_stats = [maxHp, luck, passiveHeal, tempHearts, health, Upgrade.shrink.duration, Upgrade.timeSlow.duration, Upgrade.shield.duration, Upgrade.typeDecrease.duration, Upgrade.screenWipe.duration] #upgrade spot
+UPGRADE_STAT_AMOUNT = [Upgrade.hpIncrease.amount, Upgrade.luckIncrease.amount, Upgrade.passiveHealIncrease.amount, Upgrade.tempHeartIncrease.amount, Upgrade.heal.amount, Upgrade.shrink.durationIncrease, Upgrade.timeSlow.durationIncrease, Upgrade.shield.durationIncrease, Upgrade.typeDecrease.durationIncrease, Upgrade.screenWipe.durationIncrease] #upgrade spot
 
 SPEED_AMOUNT = 2
 
@@ -458,9 +458,9 @@ def upgradeScreen(unlock_chance):
                 for q in range(len(nameSplit)):
                     splitUpgrade.append(nameSplit[q])
                 if(rarity != "unlock"):
-                    if(upgrade[i] <= 3 or upgrade[i] >= TOTAL_AMOUNT_OF_LEGENDARY_UPGRADES - 1): #upgrade spot
+                    if(upgrade[i] <= 2 or upgrade[i] >= TOTAL_AMOUNT_OF_LEGENDARY_UPGRADES - 1): #upgrade spot
                         splitUpgrade.append(f"{upgrade_stats[t]} => {upgrade_stats[t] + UPGRADE_STAT_AMOUNT[t] * rarity_increase[i]}")
-                    elif(upgrade[i] == 4):
+                    elif(upgrade[i] == 3):
                         if(health + UPGRADE_STAT_AMOUNT[t] * rarity_increase[i] >= maxHp):
                             splitUpgrade.append(f"{health} => {upgrade_stats[0]}")
                         else:
@@ -514,19 +514,16 @@ def giveAbility(clickedAbility, rarityIncrease):
     elif(clickedAbility == 4):
         health += Upgrade.healUp(rarityIncrease, maxHp, health)
     elif(clickedAbility == 5):
-        Upgrade.shield.duration += Upgrade.shieldIncrease(rarityIncrease)
-    elif(clickedAbility == 6):
         Upgrade.shrink.duration += Upgrade.shrinkIncrease(rarityIncrease)
-    elif(clickedAbility == 7):
+    elif(clickedAbility == 6):
         Upgrade.timeSlow.duration += Upgrade.timeSlowIncrease(rarityIncrease)
+    elif(clickedAbility == 7):
+        Upgrade.shield.duration += Upgrade.shieldIncrease(rarityIncrease)
     elif(clickedAbility == 8):
-        print(rarityIncrease)
-        print(Upgrade.typeDecreaseIncrease(rarityIncrease))
         Upgrade.typeDecrease.duration += Upgrade.typeDecreaseIncrease(rarityIncrease)
-        print(Upgrade.typeDecrease.duration)
     elif(clickedAbility == 9):
         Upgrade.screenWipe.duration += Upgrade.screenWipeIncrease(rarityIncrease)
-    upgrade_stats = [maxHp, luck, passiveHeal, tempHearts, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration, Upgrade.typeDecrease.duration, Upgrade.screenWipe.duration] #upgrade spot
+    upgrade_stats = [maxHp, luck, passiveHeal, tempHearts, health, Upgrade.shrink.duration, Upgrade.timeSlow.duration, Upgrade.shield.duration, Upgrade.typeDecrease.duration, Upgrade.screenWipe.duration] #upgrade spot
 
 def roll_item(luck, unlock_chance):
     global finalRareRarity
@@ -739,7 +736,7 @@ def reset():
     Upgrade.timeSlow.duration = 0
     Upgrade.typeDecrease.duration = 0
     Upgrade.screenWipe.duration = 0
-    upgrade_stats = [maxHp, luck, passiveHeal, tempHearts, health, Upgrade.shield.duration, Upgrade.shrink.duration, Upgrade.timeSlow.duration, Upgrade.typeDecrease.duration, Upgrade.screenWipe.duration] #upgrade spot
+    upgrade_stats = [maxHp, luck, passiveHeal, tempHearts, health, Upgrade.shrink.duration, Upgrade.timeSlow.duration, Upgrade.shield.duration, Upgrade.typeDecrease.duration, Upgrade.screenWipe.duration] #upgrade spot
     lockedUpgrades = UPGRADE_LIST.copy() #upgrade spot
     print("Reset")
 
@@ -851,10 +848,15 @@ def continueGame():
     main(int(df["level"][0]))
 
 def giveGold(level):
-    amountOfGold = round(level ** 1.4)
+    amountOfGold = round(level ** 1.5)
     df = pd.read_csv(allData_path)
     newAmountOfGold = amountOfGold + df["gold"][0]
-    allData = {"gold": [newAmountOfGold]}
+    if(df["high score"][0] < level):
+        newHighScore = level
+    else:
+        newHighScore = df["highscore"][0]
+    allData = {"gold": [newAmountOfGold],
+               "high score": [newHighScore]}
     df = pd.DataFrame(allData)
     df.to_csv(allData_path, index=False)
 
@@ -1129,9 +1131,9 @@ def run(level):
         if dead:
             lost_text = FONT_END.render("You Lost", 1, "black")
             WIN.blit(lost_text, (WIDTH/2 - lost_text.get_width()/2, HEIGHT/2 - lost_text.get_height()))
-            lost_text = FONT_END.render(f"Levels Beaten: {level - 1}", 1, "black")
+            lost_text = FONT_END.render(f"Level: {level}", 1, "black")
             WIN.blit(lost_text, (WIDTH/2 - lost_text.get_width()/2, HEIGHT/2))
-            gold_text = FONT_END.render(f"+{round(level ** 1.4)} gold", 1, "gold")
+            gold_text = FONT_END.render(f"+{round(level ** 1.5)} gold", 1, "gold")
             WIN.blit(gold_text, (WIDTH/2 - gold_text.get_width()/2, HEIGHT/2 + lost_text.get_height()))
             pygame.display.update()
             pygame.time.delay(3000)

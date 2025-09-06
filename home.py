@@ -10,17 +10,38 @@ FONT_HOME = pygame.font.SysFont("arial", 80)
 FONT_PLAY = pygame.font.SysFont("arial", 45)
 FONT_GOLD = pygame.font.SysFont("arial", 45)
 FONT_TITLE = pygame.font.SysFont("arial", 100)
+FONT_SHOP = pygame.font.SysFont("arial", 25)
 
 PLAY_BOX_SIZE = 400
 GOLD_SIZE = 40
+SHOP_SIZE = 150
+
+SHOP_Y = 300
+SHOP_SCREEN_X = 500
+SHOP_SCREEN_Y = 625
+SHOP_PIXIL = SHOP_SCREEN_X / 100
 
 PLAY_BOX = pygame.transform.scale(pygame.image.load("images/play_box.png"), (PLAY_BOX_SIZE,PLAY_BOX_SIZE))
-GOLD = pygame.transform.scale(pygame.image.load("images/toppng.com-plain-gold-coin-png-300x300.png"), (GOLD_SIZE, GOLD_SIZE))
+GOLD = pygame.transform.scale(pygame.image.load("images/BB_Coin.png"), (GOLD_SIZE, GOLD_SIZE))
+SHOP = pygame.transform.scale(pygame.image.load("images/[CITYPNG.COM]Download Shopping Store Market Icon PNG - 800x800.png"), (SHOP_SIZE, SHOP_SIZE))
+SHOP_SCREEN_UPGRADE_TAB = pygame.transform.scale(pygame.image.load("images/BB_Shop_-_blue_tab_selected.png"), (SHOP_SCREEN_X, SHOP_SCREEN_Y))
+SHOP_SCREEN_COSMETICS_TAB = pygame.transform.scale(pygame.image.load("images/BB_Shop_-_yellow_tab_selected.png"), (SHOP_SCREEN_X, SHOP_SCREEN_Y))
+SHOP_SCREEN_PRESTIGE_TAB = pygame.transform.scale(pygame.image.load("images/BB_Shop_-_red_tab_selected.png"), (SHOP_SCREEN_X, SHOP_SCREEN_Y))
+
+SHOP_SCREEN_TOP_LEFT = (main.WIDTH / 2 - SHOP_SCREEN_X / 2, main.HEIGHT / 2 - SHOP_SCREEN_Y / 2)
 
 PLAY_BOX_PIXIL = PLAY_BOX_SIZE / 100
 
 CONTINUE_LOCATION = (main.WIDTH - PLAY_BOX_PIXIL * 72, main.WIDTH - PLAY_BOX_PIXIL * 6, main.HEIGHT - PLAY_BOX_PIXIL * 56, main.HEIGHT - PLAY_BOX_PIXIL * 35)
 NEW_GAME_LOCATION = (main.WIDTH - PLAY_BOX_PIXIL * 72, main.WIDTH - PLAY_BOX_PIXIL * 6, main.HEIGHT - PLAY_BOX_PIXIL * 26, main.HEIGHT - PLAY_BOX_PIXIL * 6)
+SHOP_LOCATION = (10, 10 + SHOP_SIZE, SHOP_Y, SHOP_Y + SHOP_SIZE)
+SHOP_SCREEN_LOCATIONS = (((SHOP_SCREEN_TOP_LEFT[0] + 4 * SHOP_PIXIL, SHOP_SCREEN_TOP_LEFT[0] + 30 * SHOP_PIXIL), (SHOP_SCREEN_TOP_LEFT[0] + 36 * SHOP_PIXIL, SHOP_SCREEN_TOP_LEFT[0] + 63 * SHOP_PIXIL), 
+                          (SHOP_SCREEN_TOP_LEFT[0] + 69 * SHOP_PIXIL, SHOP_SCREEN_TOP_LEFT[0] + 96 * SHOP_PIXIL), (SHOP_SCREEN_TOP_LEFT[1] + 18 * SHOP_PIXIL, SHOP_SCREEN_TOP_LEFT[1] + 29 * SHOP_PIXIL)), 
+                          ((SHOP_SCREEN_TOP_LEFT[0] + 88 * SHOP_PIXIL, SHOP_SCREEN_TOP_LEFT[0] + 99 * SHOP_PIXIL), (SHOP_SCREEN_TOP_LEFT[1] + 1 * SHOP_PIXIL, SHOP_SCREEN_TOP_LEFT[1] + 12 * SHOP_PIXIL)),
+                          (SHOP_SCREEN_TOP_LEFT[0] + 59 * SHOP_PIXIL, SHOP_SCREEN_TOP_LEFT[1] + 1.5 * SHOP_PIXIL),
+                          (SHOP_SCREEN_TOP_LEFT[0] + 16.5 * SHOP_PIXIL, SHOP_SCREEN_TOP_LEFT[0] + 49 * SHOP_PIXIL, SHOP_SCREEN_TOP_LEFT[0] + 82 * SHOP_PIXIL, SHOP_SCREEN_TOP_LEFT[1] + 23 * SHOP_PIXIL))
+
+SHOP_BACKGROUND = pygame.Rect(300, 100, 300, 500)
 
 local_appdata = os.getenv("LOCALAPPDATA")  # e.g., C:\Users\<User>\AppData\Local
 app_name = "BulletBarrage"
@@ -35,6 +56,7 @@ def homePage():
     createFiles()
     df = pd.read_csv(allData_path)
     amountOfGold = df["gold"][0]
+    highScore = df["high score"][0]
     while(run):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -46,15 +68,22 @@ def homePage():
                     main.main(1)
                 elif(clickpos[0] >= CONTINUE_LOCATION[0] and clickpos[0] <= CONTINUE_LOCATION[1] and clickpos[1] >= CONTINUE_LOCATION[2] and clickpos[1] <= CONTINUE_LOCATION[3]):
                     main.continueGame()
-        homePageDraw(amountOfGold)
+                elif(clickpos[0] >= SHOP_LOCATION[0] and clickpos[0] <= SHOP_LOCATION[1] and clickpos[1] >= SHOP_LOCATION[2] and clickpos[1] <= SHOP_LOCATION[3]):
+                    shopPage(amountOfGold)
+        homePageDraw(amountOfGold, highScore)
 
-def homePageDraw(amountOfGold):
+def homePageDraw(amountOfGold, highScore):
     main.WIN.blit(main.BG, (0, 0))
     main.WIN.blit(PLAY_BOX, (main.WIDTH - PLAY_BOX.get_width(), main.HEIGHT - PLAY_BOX.get_height()))
 
     gold_text = FONT_GOLD.render(f"{amountOfGold}", 1, "gold")
     main.WIN.blit(GOLD, (main.WIDTH - GOLD.get_width() - gold_text.get_width() - 15, 5))
     main.WIN.blit(gold_text, (main.WIDTH - gold_text.get_width() - 10, 0))
+
+    high_score_text = FONT_GOLD.render(f"High Score: {highScore}", 1, "black")
+    main.WIN.blit(high_score_text, (10, 10))
+
+    main.WIN.blit(SHOP, (10, SHOP_Y))
 
     title_text = FONT_TITLE.render("Bullet Barage", 1, "black")
     play_text = FONT_HOME.render("Play", 1, "black")
@@ -67,6 +96,46 @@ def homePageDraw(amountOfGold):
 
     pygame.display.update()
 
+def shopPage(amountOfGold):
+    currentScreen = ["upgrade screen", SHOP_SCREEN_UPGRADE_TAB]
+    run = True
+    while(run):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+                pygame.quit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                clickpos = event.pos
+                if(clickpos[1] >= SHOP_SCREEN_LOCATIONS[0][3][0] and clickpos[1] <= SHOP_SCREEN_LOCATIONS[0][3][1]):
+                    if(clickpos[0] >= SHOP_SCREEN_LOCATIONS[0][0][0] and clickpos[0] <= SHOP_SCREEN_LOCATIONS[0][0][1]):
+                        currentScreen = ["upgrade screen", SHOP_SCREEN_UPGRADE_TAB]
+                    elif(clickpos[0] >= SHOP_SCREEN_LOCATIONS[0][1][0] and clickpos[0] <= SHOP_SCREEN_LOCATIONS[0][1][1]):
+                        currentScreen = ["cosmetic screen", SHOP_SCREEN_COSMETICS_TAB]
+                    elif(clickpos[0] >= SHOP_SCREEN_LOCATIONS[0][2][0] and clickpos[0] <= SHOP_SCREEN_LOCATIONS[0][2][1]):
+                        currentScreen = ["prestige screen", SHOP_SCREEN_PRESTIGE_TAB]
+                elif(clickpos[0] >= SHOP_SCREEN_LOCATIONS[1][0][0] and clickpos[0] <= SHOP_SCREEN_LOCATIONS[1][0][1] and 
+                     clickpos[1] >= SHOP_SCREEN_LOCATIONS[1][1][0] and clickpos[1] <= SHOP_SCREEN_LOCATIONS[1][1][1]):
+                    run = False
+        shopPageDraw(currentScreen, amountOfGold)
+
+def shopPageDraw(currentScreen, amountOfGold):
+    main.WIN.blit(main.BG, (0, 0))
+    main.WIN.blit(currentScreen[1], (main.WIDTH / 2 - SHOP_SCREEN_X / 2, main.HEIGHT / 2 - SHOP_SCREEN_Y / 2))
+
+    gold_text = FONT_GOLD.render(f"{amountOfGold}", 1, "gold")
+    main.WIN.blit(gold_text, SHOP_SCREEN_LOCATIONS[2])
+
+    upgrade_text = FONT_SHOP.render("upgrade", 1, "black")
+    main.WIN.blit(upgrade_text, (SHOP_SCREEN_LOCATIONS[3][0] - upgrade_text.get_width() / 2, SHOP_SCREEN_LOCATIONS[3][3]  - upgrade_text.get_height() / 2))
+
+    cosmetics_text = FONT_SHOP.render("cosmetics", 1, "black")
+    main.WIN.blit(cosmetics_text, (SHOP_SCREEN_LOCATIONS[3][1] - cosmetics_text.get_width() / 2, SHOP_SCREEN_LOCATIONS[3][3]  - cosmetics_text.get_height() / 2))
+
+    prestige_text = FONT_SHOP.render("prestige", 1, "black")
+    main.WIN.blit(prestige_text, (SHOP_SCREEN_LOCATIONS[3][2] - prestige_text.get_width() / 2, SHOP_SCREEN_LOCATIONS[3][3]  - prestige_text.get_height() / 2))
+
+    pygame.display.update()
+
 def createFiles():
     if not(os.path.exists(app_folder)):
         os.makedirs(app_folder, exist_ok=True)
@@ -75,7 +144,8 @@ def createFiles():
         df = pd.DataFrame(data)
         df.to_csv(gameSaveData_path, index=False)
     if not(os.path.exists(allData_path)):
-        data = {"gold": [0]}
+        data = {"gold": [0],
+                "high score": [0]}
         df = pd.DataFrame(data)
         df.to_csv(allData_path, index=False)
 
