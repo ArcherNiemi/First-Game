@@ -3,6 +3,7 @@ import pygame
 import csv
 import pandas as pd
 import os
+import ast
 
 pygame.init()
 
@@ -20,7 +21,9 @@ ICON_SIZE = 150
 SHOP_Y = 300
 SCREEN_X = 500
 SCREEN_Y = 625
-SCREEN_PIXIL = SCREEN_X / 100
+SCREEN_PIXIL = int(SCREEN_X / 100)
+
+SLOT_SIZE = 60
 
 PLAY_BOX = pygame.transform.scale(pygame.image.load("images/play_box.png"), (PLAY_BOX_SIZE,PLAY_BOX_SIZE))
 GOLD = pygame.transform.scale(pygame.image.load("images/BB_Coin.png"), (GOLD_SIZE, GOLD_SIZE))
@@ -38,14 +41,24 @@ PLAY_BOX_PIXIL = PLAY_BOX_SIZE / 100
 CONTINUE_LOCATION = (main.WIDTH - PLAY_BOX_PIXIL * 72, main.WIDTH - PLAY_BOX_PIXIL * 6, main.HEIGHT - PLAY_BOX_PIXIL * 56, main.HEIGHT - PLAY_BOX_PIXIL * 35)
 NEW_GAME_LOCATION = (main.WIDTH - PLAY_BOX_PIXIL * 72, main.WIDTH - PLAY_BOX_PIXIL * 6, main.HEIGHT - PLAY_BOX_PIXIL * 26, main.HEIGHT - PLAY_BOX_PIXIL * 6)
 SHOP_LOCATION = (10, 10 + ICON_SIZE, SHOP_Y, SHOP_Y + ICON_SIZE)
-SHOP_SCREEN_LOCATIONS = (((SCREEN_TOP_LEFT[0] + 4 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 30 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[0] + 36 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 63 * SCREEN_PIXIL), 
-                          (SCREEN_TOP_LEFT[0] + 69 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 96 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[1] + 18 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 29 * SCREEN_PIXIL)), 
+SHOP_SCREEN_LOCATIONS = (((SCREEN_TOP_LEFT[1] + 18 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 29 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[0] + 4 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 30 * SCREEN_PIXIL), 
+                          (SCREEN_TOP_LEFT[0] + 36 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 63 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[0] + 69 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 96 * SCREEN_PIXIL)), 
                           ((SCREEN_TOP_LEFT[0] + 88 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 99 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[1] + 1 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 12 * SCREEN_PIXIL)),
                           (SCREEN_TOP_LEFT[0] + 59 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 1.5 * SCREEN_PIXIL),
                           (SCREEN_TOP_LEFT[0] + 16.5 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 49 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 82 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 23 * SCREEN_PIXIL))
 
 INVENTORY_LOCATION = (10, 10 + ICON_SIZE,  SHOP_Y + SHOP.get_height() + 15, SHOP_Y + SHOP.get_height() + 15 + INVENTORY.get_height())
-INVENTORY_SCREEN_LOCATIONS = ((SCREEN_TOP_LEFT[0] + 88 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 99 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[1] + 1 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 12 * SCREEN_PIXIL))
+INVENTORY_SCREEN_LOCATIONS = ((SCREEN_TOP_LEFT[1] + 1 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 12 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[0] + 79 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 88 * SCREEN_PIXIL),(SCREEN_TOP_LEFT[0] + 89 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 98 * SCREEN_PIXIL))
+INVENTORY_TOP = ((SCREEN_TOP_LEFT[0] + 5 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 19 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[0] + 96 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 47 * SCREEN_PIXIL))
+INVENTORY_BOTTOM = ((SCREEN_TOP_LEFT[0] + 5 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 57 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[0] + 96 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 121 * SCREEN_PIXIL))
+
+INVENTORY_SLOTS_TOP = []
+INVENTORY_SLOTS_BOTTOM = []
+
+INVENTORY_ITEMS_TOP = []
+INVENTORY_ITEMS_BOTTOM = []
+
+IMAGES = [main.EMPTY_HEART, main.SUPER_BULLET, main.HOMING_BULLET, main.TEMP_HEART, main.FULL_HEART, main.SHRINK, main.CLOCK, main.SHIELD_FULL, main.TYPE_DECREASE, main.SCREEN_WIPE]
 
 SHOP_BACKGROUND = pygame.Rect(300, 100, 300, 500)
 
@@ -59,6 +72,7 @@ print(app_folder)
 
 def homePage():
     run = True
+    createInventorySlots()
     createFiles()
     df = pd.read_csv(allData_path)
     amountOfGold = df["gold"][0]
@@ -119,12 +133,12 @@ def shopPage(amountOfGold):
                 pygame.quit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 clickpos = event.pos
-                if(clickpos[1] >= SHOP_SCREEN_LOCATIONS[0][3][0] and clickpos[1] <= SHOP_SCREEN_LOCATIONS[0][3][1]):
-                    if(clickpos[0] >= SHOP_SCREEN_LOCATIONS[0][0][0] and clickpos[0] <= SHOP_SCREEN_LOCATIONS[0][0][1]):
+                if(clickpos[1] >= SHOP_SCREEN_LOCATIONS[0][0][0] and clickpos[1] <= SHOP_SCREEN_LOCATIONS[0][0][1]):
+                    if(clickpos[0] >= SHOP_SCREEN_LOCATIONS[0][1][0] and clickpos[0] <= SHOP_SCREEN_LOCATIONS[0][1][1]):
                         currentScreen = ["upgrade screen", SHOP_SCREEN_UPGRADE_TAB]
-                    elif(clickpos[0] >= SHOP_SCREEN_LOCATIONS[0][1][0] and clickpos[0] <= SHOP_SCREEN_LOCATIONS[0][1][1]):
-                        currentScreen = ["cosmetic screen", SHOP_SCREEN_COSMETICS_TAB]
                     elif(clickpos[0] >= SHOP_SCREEN_LOCATIONS[0][2][0] and clickpos[0] <= SHOP_SCREEN_LOCATIONS[0][2][1]):
+                        currentScreen = ["cosmetic screen", SHOP_SCREEN_COSMETICS_TAB]
+                    elif(clickpos[0] >= SHOP_SCREEN_LOCATIONS[0][3][0] and clickpos[0] <= SHOP_SCREEN_LOCATIONS[0][3][1]):
                         currentScreen = ["prestige screen", SHOP_SCREEN_PRESTIGE_TAB]
                 elif(clickpos[0] >= SHOP_SCREEN_LOCATIONS[1][0][0] and clickpos[0] <= SHOP_SCREEN_LOCATIONS[1][0][1] and 
                      clickpos[1] >= SHOP_SCREEN_LOCATIONS[1][1][0] and clickpos[1] <= SHOP_SCREEN_LOCATIONS[1][1][1]):
@@ -150,6 +164,27 @@ def shopPageDraw(currentScreen, amountOfGold):
     pygame.display.update()
 
 def inventoryPage():
+    global INVENTORY_ITEMS_TOP
+    global INVENTORY_ITEMS_BOTTOM
+
+    df = pd.read_csv(allData_path)
+    current_loadout = df["current loadout"][0]
+    print(f"thing thing{current_loadout}")
+    
+    for i in range(len(main.UPGRADE_LIST)):
+        if(main.UPGRADE_LIST[i] in current_loadout):
+            for t in range(len(INVENTORY_ITEMS_TOP)):
+                if(INVENTORY_ITEMS_TOP[t] == ""):
+                    INVENTORY_ITEMS_TOP[t] = main.UPGRADE_LIST[i]
+                    break
+        else:
+            for t in range(len(INVENTORY_ITEMS_BOTTOM)):
+                if(INVENTORY_ITEMS_BOTTOM[t] == ""):
+                    INVENTORY_ITEMS_BOTTOM[t] = main.UPGRADE_LIST[i]
+                    break
+    print(INVENTORY_ITEMS_TOP)
+    print(INVENTORY_ITEMS_BOTTOM)
+
     run = True
     while(run):
         for event in pygame.event.get():
@@ -158,14 +193,57 @@ def inventoryPage():
                 pygame.quit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 clickpos = event.pos
-                if(clickpos[0] >= INVENTORY_SCREEN_LOCATIONS[0][0] and clickpos[0] <= INVENTORY_SCREEN_LOCATIONS[0][1] and 
-                     clickpos[1] >= INVENTORY_SCREEN_LOCATIONS[1][0] and clickpos[1] <= INVENTORY_SCREEN_LOCATIONS[1][1]):
-                    run = False
+                if(clickpos[1] >= INVENTORY_SCREEN_LOCATIONS[0][0] and clickpos[1] <= INVENTORY_SCREEN_LOCATIONS[0][1]):
+                    if(clickpos[0] >= INVENTORY_SCREEN_LOCATIONS[1][0] and clickpos[0] <= INVENTORY_SCREEN_LOCATIONS[1][1]):
+                        print("x")
+                        run = False
+                    elif(clickpos[0] >= INVENTORY_SCREEN_LOCATIONS[2][0] and clickpos[0] <= INVENTORY_SCREEN_LOCATIONS[2][1]):
+                        print("check")
+                        run = False
+                for i in range(len(INVENTORY_SLOTS_TOP)):
+                    if(clickpos[0] >= INVENTORY_SLOTS_TOP[i][0] and clickpos[1] >= INVENTORY_SLOTS_TOP[i][1] and
+                       clickpos[0] <= INVENTORY_SLOTS_TOP[i][0] + SLOT_SIZE and clickpos[1] <= INVENTORY_SLOTS_TOP[i][1] + SLOT_SIZE):
+                        print(i)
+                        if(not(INVENTORY_ITEMS_TOP == "")):
+                            for t in range(len(INVENTORY_ITEMS_BOTTOM)):
+                                if(INVENTORY_ITEMS_BOTTOM[t] == ""):
+                                    INVENTORY_ITEMS_BOTTOM[t] = INVENTORY_ITEMS_TOP[i]
+                                    INVENTORY_ITEMS_TOP[i] = ""
+                                    print(INVENTORY_ITEMS_TOP)
+                                    break
+                        break
+                for i in range(len(INVENTORY_SLOTS_BOTTOM)):
+                    if(clickpos[0] >= INVENTORY_SLOTS_BOTTOM[i][0] and clickpos[1] >= INVENTORY_SLOTS_BOTTOM[i][1] and
+                       clickpos[0] <= INVENTORY_SLOTS_BOTTOM[i][0] + SLOT_SIZE and clickpos[1] <= INVENTORY_SLOTS_BOTTOM[i][1] + SLOT_SIZE):
+                        print(i)
+                        if(not(INVENTORY_ITEMS_BOTTOM == "")):
+                            for t in range(len(INVENTORY_ITEMS_TOP)):
+                                if(INVENTORY_ITEMS_TOP[t] == ""):
+                                    INVENTORY_ITEMS_TOP[t] = INVENTORY_ITEMS_BOTTOM[i]
+                                    INVENTORY_ITEMS_BOTTOM[i] = ""
+                                    print(INVENTORY_ITEMS_BOTTOM)
+                                    break
+                        break
         inventoryPageDraw()
 
 def inventoryPageDraw():
     main.WIN.blit(main.BG, (0, 0))
     main.WIN.blit(INVENTORY_SCREEN, (main.WIDTH / 2 - SCREEN_X / 2, main.HEIGHT / 2 - SCREEN_Y / 2))
+
+    for i in range(len(main.UPGRADE_LIST)):
+        for t in range(len(INVENTORY_ITEMS_TOP)):
+            if(INVENTORY_ITEMS_TOP[t] == main.UPGRADE_LIST[i]):
+                main.WIN.blit(IMAGES[i], INVENTORY_SLOTS_TOP[t])
+                break
+        for t in range(len(INVENTORY_ITEMS_BOTTOM)):
+            if(INVENTORY_ITEMS_BOTTOM[t] == main.UPGRADE_LIST[i]):
+                main.WIN.blit(IMAGES[i], INVENTORY_SLOTS_BOTTOM[t])
+                break
+
+    # for i in range(len(INVENTORY_SLOTS_TOP)):
+    #     pygame.draw.rect(main.WIN, "orange", pygame.Rect(INVENTORY_SLOTS_TOP[i][0], INVENTORY_SLOTS_TOP[i][1], SLOT_SIZE, SLOT_SIZE))
+    # for i in range(len(INVENTORY_SLOTS_BOTTOM)):
+    #     pygame.draw.rect(main.WIN, "orange", pygame.Rect(INVENTORY_SLOTS_BOTTOM[i][0], INVENTORY_SLOTS_BOTTOM[i][1], SLOT_SIZE, SLOT_SIZE))
 
     pygame.display.update()
 
@@ -177,10 +255,43 @@ def createFiles():
         df = pd.DataFrame(data)
         df.to_csv(gameSaveData_path, index=False)
     if not(os.path.exists(allData_path)):
-        data = {"gold": [0],
-                "high score": [0]}
+        data = {"gold": [362],
+                "high score": [50],
+                "locked upgrades": [main.UPGRADE_LIST],
+                "current loadout": [" "]}
         df = pd.DataFrame(data)
         df.to_csv(allData_path, index=False)
+
+def createInventorySlots():
+    global INVENTORY_SLOTS_TOP
+    global INVENTORY_SLOTS_BOTTOM
+    global INVENTORY_ITEMS_TOP
+    global INVENTORY_ITEMS_BOTTOM
+
+    current_location = [INVENTORY_TOP[0][0], INVENTORY_TOP[0][1]]
+    print(INVENTORY_TOP)
+    while(current_location[1] + SLOT_SIZE <= INVENTORY_TOP[1][1]):
+        while(current_location[0] + SLOT_SIZE <= INVENTORY_TOP[1][0]):
+            INVENTORY_SLOTS_TOP.append(current_location.copy())
+            INVENTORY_ITEMS_TOP.append("")
+            print(current_location)
+            current_location[0] += SLOT_SIZE + 5
+        current_location[1] += SLOT_SIZE + 5
+        current_location[0] = INVENTORY_TOP[0][0]
+
+    current_location = [INVENTORY_BOTTOM[0][0], INVENTORY_BOTTOM[0][1]]
+    print(INVENTORY_BOTTOM)
+    while(current_location[1] + SLOT_SIZE <= INVENTORY_BOTTOM[1][1]):
+        while(current_location[0] + SLOT_SIZE <= INVENTORY_BOTTOM[1][0]):
+            INVENTORY_SLOTS_BOTTOM.append(current_location.copy())
+            INVENTORY_ITEMS_BOTTOM.append("")
+            print(current_location)
+            current_location[0] += SLOT_SIZE + 5
+        current_location[1] += SLOT_SIZE + 5
+        current_location[0] = INVENTORY_BOTTOM[0][0]
+    print(INVENTORY_SLOTS_BOTTOM)
+
+        
 
 if __name__ == "__main__":
     homePage()
