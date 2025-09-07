@@ -91,7 +91,7 @@ EPIC_RARITY = 125
 LEGENDARY_RARITY = 25
 MYTHIC_RARITY = 1
 
-UNLOCK_CHANCE = 0.1
+UNLOCK_CHANCE = 0
 
 COMMON_POWER = 1
 RARE_POWER = 2
@@ -458,9 +458,9 @@ def upgradeScreen(unlock_chance):
                 for q in range(len(nameSplit)):
                     splitUpgrade.append(nameSplit[q])
                 if(rarity != "unlock"):
-                    if(upgrade[i] <= 2 or upgrade[i] >= TOTAL_AMOUNT_OF_LEGENDARY_UPGRADES - 1): #upgrade spot
+                    if(upgrade[i] <= 3 or upgrade[i] >= TOTAL_AMOUNT_OF_LEGENDARY_UPGRADES - 1): #upgrade spot
                         splitUpgrade.append(f"{upgrade_stats[t]} => {upgrade_stats[t] + UPGRADE_STAT_AMOUNT[t] * rarity_increase[i]}")
-                    elif(upgrade[i] == 3):
+                    elif(upgrade[i] == 4):
                         if(health + UPGRADE_STAT_AMOUNT[t] * rarity_increase[i] >= maxHp):
                             splitUpgrade.append(f"{health} => {upgrade_stats[0]}")
                         else:
@@ -793,6 +793,7 @@ def main(startLevel):
     global running
     global luck
     global health
+    setUp()
     while(True):
         if(luck != 0):
             for i in range(luck):
@@ -815,6 +816,17 @@ def main(startLevel):
             saveGame(level)
         giveGold(level - 1)
         resetScreen()
+
+def setUp():
+    global lockedUpgrades
+    df = pd.read_csv(allData_path)
+    currentLoadout = df["current loadout"][0]
+    for i in range(len(UPGRADE_LIST)):
+        if(UPGRADE_LIST[i] in currentLoadout):
+            lockedUpgrades.remove(UPGRADE_LIST[i])
+    print(f"locked: {lockedUpgrades}")
+    print(f"upgrade: {UPGRADE_LIST}")
+
 
 def saveGame(level):
     gameSaveData = {"level": [level],
@@ -852,12 +864,8 @@ def giveGold(level):
     df = pd.read_csv(allData_path)
     newAmountOfGold = amountOfGold + df["gold"][0]
     if(df["high score"][0] < level):
-        newHighScore = level
-    else:
-        newHighScore = df["highscore"][0]
-    allData = {"gold": [newAmountOfGold],
-               "high score": [newHighScore]}
-    df = pd.DataFrame(allData)
+        df.at[0, "high score"] = level
+    df.at[0, "gold"] = newAmountOfGold
     df.to_csv(allData_path, index=False)
 
     gameSaveData = {"level": [level],
