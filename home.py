@@ -249,13 +249,14 @@ def updateCurrentLoadout():
     print(currentLoadoutList)
     df.at[0, "current loadout"] = currentLoadoutList
     df.to_csv(allData_path, index=False)
+    print(f"current: {df["current loadout"][0]}")
 
 def setUpInventory():
     global INVENTORY_ITEMS_TOP
     global INVENTORY_ITEMS_BOTTOM
 
     df = pd.read_csv(allData_path)
-    current_loadout = df["current loadout"][0]
+    current_loadout = ast.literal_eval(df["current loadout"][0])
     print(f"thing thing{current_loadout}")
     
     for i in range(len(main.UPGRADE_LIST)):

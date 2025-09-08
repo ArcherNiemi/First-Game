@@ -105,8 +105,6 @@ TOTAL_AMOUNT_OF_EPIC_UPGRADES = 9
 TOTAL_AMOUNT_OF_LEGENDARY_UPGRADES = 10
 TOTAL_AMOUNT_OF_MYTHIC_UPGRADES = 10
 
-COOL_DOWN = 5
-
 SPEED_BULLET_START_ROUND = 5
 EXPLODING_BULLET_START_ROUND = 10
 HOMING_BULLET_START_ROUND = 15
@@ -223,7 +221,7 @@ def draw(player, elapsed_time, bullets, explosions, shield, shrink, timeSlow, sc
             if(Upgrade.shield.duration <= 0):
                 draw_rect_alpha(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE))
             elif(currentShieldCoolDown > 0):
-                draw_transparent_arc(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * currentShieldCoolDown) / COOL_DOWN)
+                draw_transparent_arc(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * currentShieldCoolDown) / Upgrade.shield.coolDown)
             elif(shield):
                 draw_transparent_arc(WIN, pygame.Color(0, 255, 0, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * (shield_time - elapsed_time + Upgrade.shield.duration))/Upgrade.shield.duration)
         elif(inventoryLocations[1] == i):
@@ -231,7 +229,7 @@ def draw(player, elapsed_time, bullets, explosions, shield, shrink, timeSlow, sc
             if(Upgrade.shrink.duration <= 0):
                 draw_rect_alpha(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE))
             elif(currentShrinkCoolDown > 0):
-                draw_transparent_arc(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * currentShrinkCoolDown) / COOL_DOWN)
+                draw_transparent_arc(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * currentShrinkCoolDown) / Upgrade.shrink.coolDown)
             elif(shrink):
                 draw_transparent_arc(WIN, pygame.Color(0, 255, 0, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * (shrink_time - elapsed_time + Upgrade.shrink.duration))/ Upgrade.shrink.duration)
         elif(inventoryLocations[2] == i):
@@ -239,7 +237,7 @@ def draw(player, elapsed_time, bullets, explosions, shield, shrink, timeSlow, sc
             if(Upgrade.timeSlow.duration <= 0):
                 draw_rect_alpha(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE))
             elif(currentTimeSlowCoolDown > 0):
-                draw_transparent_arc(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * currentTimeSlowCoolDown) / COOL_DOWN)
+                draw_transparent_arc(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * currentTimeSlowCoolDown) / Upgrade.timeSlow.coolDown)
             elif(timeSlow):
                 draw_transparent_arc(WIN, pygame.Color(0, 255, 0, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * (timeSlow_time - time.time() + Upgrade.timeSlow.duration))/ Upgrade.timeSlow.duration)
         elif(inventoryLocations[3] == i):
@@ -247,7 +245,7 @@ def draw(player, elapsed_time, bullets, explosions, shield, shrink, timeSlow, sc
             if(Upgrade.typeDecrease.duration <= 0):
                 draw_rect_alpha(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE))
             elif(currentTypeDecreaseCoolDown > 0):
-                draw_transparent_arc(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * currentTypeDecreaseCoolDown) / COOL_DOWN)
+                draw_transparent_arc(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * currentTypeDecreaseCoolDown) / Upgrade.typeDecrease.coolDown)
             elif(typeDecrease):
                 draw_transparent_arc(WIN, pygame.Color(0, 255, 0, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * (typeDecrease_time - elapsed_time + Upgrade.typeDecrease.duration))/ Upgrade.typeDecrease.duration)
         elif(inventoryLocations[4] == i):
@@ -255,7 +253,7 @@ def draw(player, elapsed_time, bullets, explosions, shield, shrink, timeSlow, sc
             if(Upgrade.screenWipe.duration <= 0):
                 draw_rect_alpha(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE))
             elif(currentScreenWipeCoolDown > 0):
-                draw_transparent_arc(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * currentScreenWipeCoolDown) / COOL_DOWN)
+                draw_transparent_arc(WIN, pygame.Color(50, 50, 50, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * currentScreenWipeCoolDown) / Upgrade.screenWipe.coolDown)
             elif(screenWipe):
                 draw_transparent_arc(WIN, pygame.Color(0, 255, 0, 128), pygame.Rect(10, 20 + time_text.get_height() + level_text.get_height() + ABILITY_SIZE * i + 5 * i, ABILITY_SIZE, ABILITY_SIZE), 0, (2 * math.pi * (screenWipe_time - elapsed_time + Upgrade.screenWipe.duration))/ Upgrade.screenWipe.duration)
     
@@ -746,6 +744,7 @@ def chooseType(level):
     if(level >= SUPER_BULLET_START_ROUND):
         totalBulletTypeAmount += SPECIAL_BULLET_STARTING_AMOUNT + (SPECIAL_BULLET_LEVEL_SCALING * (level - SUPER_BULLET_START_ROUND))
         if(randomInt > 100 - (totalBulletTypeAmount)):
+            type = random.choice((("speed", "exploding", "homing"),("exploding", "homing", "speed"),("homing", "speed", "exploding")))
             return ("speed", "exploding", "homing")
     if(level >= COMBO_BULLET_START_ROUND):
         totalBulletTypeAmount += SPECIAL_BULLET_STARTING_AMOUNT + (SPECIAL_BULLET_LEVEL_SCALING * (level - COMBO_BULLET_START_ROUND))
@@ -793,15 +792,13 @@ def main(startLevel):
     global running
     global luck
     global health
-    setUp()
     while(True):
         if(luck != 0):
             for i in range(luck):
                 roll_item(i, UNLOCK_CHANCE)
                 print(i)
         if(len(lockedUpgrades) >= len(UPGRADE_LIST)):
-            for i in range(5):
-                upgradeScreen(1)
+            setUp()
         inventoryScreen()
         level = startLevel
         running = True
@@ -820,10 +817,12 @@ def main(startLevel):
 def setUp():
     global lockedUpgrades
     df = pd.read_csv(allData_path)
-    currentLoadout = df["current loadout"][0]
+    currentLoadout = ast.literal_eval(df["current loadout"][0])
+    print(f"setUp: {currentLoadout}")
     for i in range(len(UPGRADE_LIST)):
         if(UPGRADE_LIST[i] in currentLoadout):
             lockedUpgrades.remove(UPGRADE_LIST[i])
+            print(f"upgrade: {UPGRADE_LIST[i]}")
     print(f"locked: {lockedUpgrades}")
     print(f"upgrade: {UPGRADE_LIST}")
 
@@ -908,11 +907,11 @@ def run(level):
     currentScreenWipeCoolDown = 0
     currentTypeDecreaseCoolDown = 0
 
-    startShieldCoolDown = -COOL_DOWN
-    startShrinkCoolDown = -COOL_DOWN
-    startTimeSlowCoolDown = -COOL_DOWN
-    startScreenWipeCoolDown = -COOL_DOWN
-    startTypeDecreaseCoolDown = -COOL_DOWN
+    startShieldCoolDown = -Upgrade.shield.coolDown
+    startShrinkCoolDown = -Upgrade.shrink.coolDown
+    startTimeSlowCoolDown = -Upgrade.timeSlow.coolDown
+    startScreenWipeCoolDown = -Upgrade.screenWipe.coolDown
+    startTypeDecreaseCoolDown = -Upgrade.typeDecrease.coolDown
 
     shield = False
     shrink = False
@@ -947,7 +946,7 @@ def run(level):
             shield = False
             startShieldCoolDown = elapsed_time
         else:
-            currentShieldCoolDown = startShieldCoolDown - elapsed_time + COOL_DOWN
+            currentShieldCoolDown = startShieldCoolDown - elapsed_time + Upgrade.shield.coolDown
         if(shrink and elapsed_time - shrink_time >= Upgrade.shrink.duration):
             shrink = False
             player.x -= player.width / 2
@@ -965,12 +964,12 @@ def run(level):
             currentPlayerVelocity = PLAYER_VELOCITY
             startShrinkCoolDown = elapsed_time
         else:
-            currentShrinkCoolDown = startShrinkCoolDown - elapsed_time + COOL_DOWN
+            currentShrinkCoolDown = startShrinkCoolDown - elapsed_time + Upgrade.shrink.coolDown
         if(timeSlow and time.time() - timeSlow_time >= Upgrade.timeSlow.duration):
             timeSlow = False
             startTimeSlowCoolDown = time.time()
         else:
-            currentTimeSlowCoolDown = startTimeSlowCoolDown - time.time() + COOL_DOWN
+            currentTimeSlowCoolDown = startTimeSlowCoolDown - time.time() + Upgrade.timeSlow.coolDown
         if(timeSlow):
             bullet_add_increment = int(round(random.randint(int(round(START_DELAY_BETWEEN_BULLETS / difficulty) / 3), int(round(START_DELAY_BETWEEN_BULLETS / difficulty))) * TIME_SLOW_AMOUNT))
         else:
@@ -979,22 +978,28 @@ def run(level):
             screenWipe = False
             startScreenWipeCoolDown = elapsed_time
         else:
-            currentScreenWipeCoolDown = startScreenWipeCoolDown - elapsed_time + COOL_DOWN
+            currentScreenWipeCoolDown = startScreenWipeCoolDown - elapsed_time + Upgrade.screenWipe.coolDown
         if(typeDecrease and elapsed_time - typeDecrease_time >= Upgrade.typeDecrease.duration):
             typeDecrease = False
             startTypeDecreaseCoolDown = elapsed_time
         else:
-            currentTypeDecreaseCoolDown = startTypeDecreaseCoolDown - elapsed_time + COOL_DOWN
+            currentTypeDecreaseCoolDown = startTypeDecreaseCoolDown - elapsed_time + Upgrade.typeDecrease.coolDown
 
         currentAmountOfTimeAfterScreenWipe = elapsed_time - startAmountOfTimeAfterScreenWipe
         if(elapsed_time < START_LENGTH_OF_ROUNDS * difficulty):
             if bullet_count > bullet_add_increment:
                 for _ in range(random.randint(int(round(START_AMOUNT_OF_BULLETS_PER_WAVE * difficulty)/2), int(round(START_AMOUNT_OF_BULLETS_PER_WAVE * difficulty)))):
                     bullet_x = random.randint(0, WIDTH - BULLET_WIDTH)
+                    bullet_type = chooseType(level)
                     if(typeDecrease):
-                        bullet_type = ["normal",""]
-                    else:
-                        bullet_type = chooseType(level)
+                        if(len(bullet_type) >= 3):
+                            bullet_type = (bullet_type[1], bullet_type[2])
+                        elif(bullet_type[1] != ""):
+                            bullet_type = (bullet_type[1], "")
+                        else:
+                            bullet_type = ("", "")
+                        
+
                     print(bullet_type)
                     for i in range(len(bullet_type)):
                         if(bullet_type[i] == "speed"):
