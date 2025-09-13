@@ -53,6 +53,9 @@ SHOP_SCREEN_LOCATIONS = (((SCREEN_TOP_LEFT[1] + 18 * SCREEN_PIXIL, SCREEN_TOP_LE
                           (SCREEN_TOP_LEFT[0] + 59 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 1.5 * SCREEN_PIXIL),
                           (SCREEN_TOP_LEFT[0] + 16.5 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 49 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 82 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 23 * SCREEN_PIXIL))
 
+SHOP_SCREEN_UPGRADE_TAB_LOCATIONS = ((SCREEN_TOP_LEFT[0] + 6 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 36 * SCREEN_PIXIL), #unlock text
+                                     ((SCREEN_TOP_LEFT[0] + 6 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 42 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[0] + 96 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 67 * SCREEN_PIXIL)))
+
 INVENTORY_LOCATION = (10, 10 + ICON_SIZE,  SHOP_Y + SHOP.get_height() + 15, SHOP_Y + SHOP.get_height() + 15 + INVENTORY.get_height())
 INVENTORY_SCREEN_LOCATIONS = (((SCREEN_TOP_LEFT[1] + 1 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 12 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[0] + 79 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 88 * SCREEN_PIXIL),(SCREEN_TOP_LEFT[0] + 89 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 98 * SCREEN_PIXIL)), #x and check mark locations
                               ((SCREEN_TOP_LEFT[1] + 19 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 29 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[0] + 5 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 47 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[0] + 54 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 97 * SCREEN_PIXIL)), #tab locations
@@ -65,6 +68,8 @@ INVENTORY_SLOTS_BOTTOM = []
 
 INVENTORY_ITEMS_TOP = []
 INVENTORY_ITEMS_BOTTOM = []
+
+SHOP_SLOTS = []
 
 IMAGES = [HP_INCREASE, LUCK, PASSIVE_HEAL, TEMP_HEARTS, HEAL, main.SHRINK, main.CLOCK, main.SHIELD_FULL, main.TYPE_DECREASE, main.SCREEN_WIPE]
 
@@ -82,6 +87,7 @@ def homePage():
     print(allData_path)
     run = True
     createInventorySlots()
+    createUnlockSlots()
     createFiles()
     setUpInventory()
     df = pd.read_csv(allData_path)
@@ -170,6 +176,12 @@ def shopPageDraw(currentScreen, amountOfGold):
 
     prestige_text = FONT_SHOP.render("Prestige", 1, "black")
     main.WIN.blit(prestige_text, (SHOP_SCREEN_LOCATIONS[3][2] - prestige_text.get_width() / 2, SHOP_SCREEN_LOCATIONS[3][3]  - prestige_text.get_height() / 2))
+
+    if(currentScreen[0] == "upgrade screen"):
+        unlock_text = FONT_SHOP.render("Unlock:", 1, "black")
+        main.WIN.blit(unlock_text, (SHOP_SCREEN_UPGRADE_TAB_LOCATIONS[0][0], SHOP_SCREEN_UPGRADE_TAB_LOCATIONS[0][1]))
+        for i in range(len(SHOP_SLOTS)):
+            pygame.draw.rect(main.WIN, "black", pygame.Rect(SHOP_SLOTS[i][0], SHOP_SLOTS[i][1], SLOT_SIZE, SLOT_SIZE))
 
     pygame.display.update()
 
@@ -341,6 +353,18 @@ def createInventorySlots():
         current_location[1] += SLOT_SIZE + 5
         current_location[0] = INVENTORY_BOTTOM[0][0]
     print(INVENTORY_SLOTS_BOTTOM)
+
+def createUnlockSlots():
+    global SHOP_SLOTS
+
+    current_location = [SHOP_SCREEN_UPGRADE_TAB_LOCATIONS[1][0][0], SHOP_SCREEN_UPGRADE_TAB_LOCATIONS[1][0][1]]
+    print(INVENTORY_TOP)
+    while(current_location[1] + SLOT_SIZE <= SHOP_SCREEN_UPGRADE_TAB_LOCATIONS[1][1][1]):
+        while(current_location[0] + SLOT_SIZE <= SHOP_SCREEN_UPGRADE_TAB_LOCATIONS[1][1][0]):
+            SHOP_SLOTS.append(current_location.copy())
+            current_location[0] += SLOT_SIZE + 5
+        current_location[1] += SLOT_SIZE + 5
+        current_location[0] = SHOP_SCREEN_UPGRADE_TAB_LOCATIONS[1][0][0]
 
         
 
