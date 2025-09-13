@@ -10,12 +10,14 @@ pygame.init()
 FONT_HOME = pygame.font.SysFont("arial", 80)
 FONT_PLAY = pygame.font.SysFont("arial", 45)
 FONT_GOLD = pygame.font.SysFont("arial", 45)
+FONT_UNLOCK = pygame.font.SysFont("arial", 20)
 FONT_TITLE = pygame.font.SysFont("arial", 100)
 FONT_SHOP = pygame.font.SysFont("arial", 25)
 FONT_INVENTORY = pygame.font.SysFont("arial", 25)
 
 PLAY_BOX_SIZE = 400
 GOLD_SIZE = 40
+UNLOCK_GOLD_SIZE = 20
 ICON_SIZE = 150
 
 SHOP_Y = 300
@@ -38,7 +40,7 @@ HEAL = pygame.transform.scale(pygame.image.load("images/heal.png"), (SLOT_SIZE, 
 HP_INCREASE = pygame.transform.scale(pygame.image.load("images/hp_increase.png"), (SLOT_SIZE, SLOT_SIZE))
 PASSIVE_HEAL = pygame.transform.scale(pygame.image.load("images/passive_heal.png"), (SLOT_SIZE, SLOT_SIZE))
 TEMP_HEARTS = pygame.transform.scale(pygame.image.load("images/temp_hearts.png"), (SLOT_SIZE, SLOT_SIZE))
-LUCK = pygame.transform.scale(pygame.image.load("images\luck.png"), (SLOT_SIZE, SLOT_SIZE))
+LUCK = pygame.transform.scale(pygame.image.load("images/luck.png"), (SLOT_SIZE, SLOT_SIZE))
 
 SCREEN_TOP_LEFT = (main.WIDTH / 2 - SCREEN_X / 2, main.HEIGHT / 2 - SCREEN_Y / 2)
 
@@ -54,7 +56,7 @@ SHOP_SCREEN_LOCATIONS = (((SCREEN_TOP_LEFT[1] + 18 * SCREEN_PIXIL, SCREEN_TOP_LE
                           (SCREEN_TOP_LEFT[0] + 16.5 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 49 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 82 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 23 * SCREEN_PIXIL))
 
 SHOP_SCREEN_UPGRADE_TAB_LOCATIONS = ((SCREEN_TOP_LEFT[0] + 6 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 36 * SCREEN_PIXIL), #unlock text
-                                     ((SCREEN_TOP_LEFT[0] + 6 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 42 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[0] + 96 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 67 * SCREEN_PIXIL)))
+                                     ((SCREEN_TOP_LEFT[0] + 6 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 42 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[0] + 96 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 77 * SCREEN_PIXIL))) #unlock start and end
 
 INVENTORY_LOCATION = (10, 10 + ICON_SIZE,  SHOP_Y + SHOP.get_height() + 15, SHOP_Y + SHOP.get_height() + 15 + INVENTORY.get_height())
 INVENTORY_SCREEN_LOCATIONS = (((SCREEN_TOP_LEFT[1] + 1 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 12 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[0] + 79 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 88 * SCREEN_PIXIL),(SCREEN_TOP_LEFT[0] + 89 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 98 * SCREEN_PIXIL)), #x and check mark locations
@@ -71,7 +73,8 @@ INVENTORY_ITEMS_BOTTOM = []
 
 SHOP_SLOTS = []
 
-IMAGES = [HP_INCREASE, LUCK, PASSIVE_HEAL, TEMP_HEARTS, HEAL, main.SHRINK, main.CLOCK, main.SHIELD_FULL, main.TYPE_DECREASE, main.SCREEN_WIPE]
+IMAGES = [HP_INCREASE, LUCK, PASSIVE_HEAL, TEMP_HEARTS, HEAL, pygame.transform.scale(main.SHRINK,(SLOT_SIZE, SLOT_SIZE)), pygame.transform.scale(main.CLOCK,(SLOT_SIZE, SLOT_SIZE)), pygame.transform.scale(main.SHIELD_FULL,(SLOT_SIZE, SLOT_SIZE)), pygame.transform.scale(main.TYPE_DECREASE,(SLOT_SIZE, SLOT_SIZE)), pygame.transform.scale(main.SCREEN_WIPE,(SLOT_SIZE, SLOT_SIZE))]
+UPGRADE_PRICES = [10, 50, 50, 50, 5, 25, 25, 25, 100, 250]
 
 SHOP_BACKGROUND = pygame.Rect(300, 100, 300, 500)
 
@@ -89,10 +92,10 @@ def homePage():
     createInventorySlots()
     createUnlockSlots()
     createFiles()
-    setUpInventory()
     df = pd.read_csv(allData_path)
     amountOfGold = df["gold"][0]
     highScore = df["high score"][0]
+    lockedUpgrades = ast.literal_eval(df["locked upgrades"][0])
     while(run):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -105,9 +108,9 @@ def homePage():
                 elif(clickpos[0] >= CONTINUE_LOCATION[0] and clickpos[0] <= CONTINUE_LOCATION[1] and clickpos[1] >= CONTINUE_LOCATION[2] and clickpos[1] <= CONTINUE_LOCATION[3]):
                     main.continueGame()
                 elif(clickpos[0] >= SHOP_LOCATION[0] and clickpos[0] <= SHOP_LOCATION[1] and clickpos[1] >= SHOP_LOCATION[2] and clickpos[1] <= SHOP_LOCATION[3]):
-                    shopPage(amountOfGold)
+                    shopPage(amountOfGold, lockedUpgrades)
                 elif(clickpos[0] >= INVENTORY_LOCATION[0] and clickpos[0] <= INVENTORY_LOCATION[1] and clickpos[1] >= INVENTORY_LOCATION[2] and clickpos[1] <= INVENTORY_LOCATION[3]):
-                    inventoryPage()
+                    inventoryPage(lockedUpgrades)
         homePageDraw(amountOfGold, highScore)
 
 def homePageDraw(amountOfGold, highScore):
@@ -139,9 +142,10 @@ def homePageDraw(amountOfGold, highScore):
 
     pygame.display.update()
 
-def shopPage(amountOfGold):
+def shopPage(amountOfGold, lockedUpgrades):
     currentScreen = ["upgrade screen", SHOP_SCREEN_UPGRADE_TAB]
     run = True
+    sortedUpgrades = sortLockedUpgrades(lockedUpgrades)
     while(run):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -159,9 +163,14 @@ def shopPage(amountOfGold):
                 elif(clickpos[0] >= SHOP_SCREEN_LOCATIONS[1][0][0] and clickpos[0] <= SHOP_SCREEN_LOCATIONS[1][0][1] and 
                      clickpos[1] >= SHOP_SCREEN_LOCATIONS[1][1][0] and clickpos[1] <= SHOP_SCREEN_LOCATIONS[1][1][1]):
                     run = False
-        shopPageDraw(currentScreen, amountOfGold)
+                for i in range(len(sortedUpgrades[0])):
+                    if(clickpos[0] >= SHOP_SLOTS[i][0] and clickpos[1] >= SHOP_SLOTS[i][1] and clickpos[0] <= SHOP_SLOTS[i][0] + SLOT_SIZE and clickpos[1] <= SHOP_SLOTS[i][1] + SLOT_SIZE):
+                        print(f"{sortedUpgrades[0][i]}")
+                        run = False
+                        buyItem(sortedUpgrades, i)
+        shopPageDraw(currentScreen, amountOfGold, sortedUpgrades)
 
-def shopPageDraw(currentScreen, amountOfGold):
+def shopPageDraw(currentScreen, amountOfGold, sortedUpgrades):
     main.WIN.blit(main.BG, (0, 0))
     main.WIN.blit(currentScreen[1], (main.WIDTH / 2 - SCREEN_X / 2, main.HEIGHT / 2 - SCREEN_Y / 2))
 
@@ -180,17 +189,43 @@ def shopPageDraw(currentScreen, amountOfGold):
     if(currentScreen[0] == "upgrade screen"):
         unlock_text = FONT_SHOP.render("Unlock:", 1, "black")
         main.WIN.blit(unlock_text, (SHOP_SCREEN_UPGRADE_TAB_LOCATIONS[0][0], SHOP_SCREEN_UPGRADE_TAB_LOCATIONS[0][1]))
-        for i in range(len(SHOP_SLOTS)):
-            pygame.draw.rect(main.WIN, "black", pygame.Rect(SHOP_SLOTS[i][0], SHOP_SLOTS[i][1], SLOT_SIZE, SLOT_SIZE))
+        for i in range(len(sortedUpgrades[0])):
+            for t in range(len(main.UPGRADE_LIST)):
+                if(sortedUpgrades[0][i] == main.UPGRADE_LIST[t]):
+                    main.WIN.blit(IMAGES[t], SHOP_SLOTS[i])
+                main.WIN.blit(pygame.transform.scale(GOLD, (UNLOCK_GOLD_SIZE,UNLOCK_GOLD_SIZE)), (SHOP_SLOTS[i][0], SHOP_SLOTS[i][1] + SLOT_SIZE))
+                price_text = FONT_UNLOCK.render(f"{sortedUpgrades[1][i]}", "1", "gold")
+                main.WIN.blit(price_text, (SHOP_SLOTS[i][0]+ UNLOCK_GOLD_SIZE, SHOP_SLOTS[i][1] + SLOT_SIZE))
 
     pygame.display.update()
 
-def inventoryPage():
+def buyItem(sortedUpgrades, location):
+    df = pd.read_csv(allData_path)
+    lockedUpgrades = ast.literal_eval(df["locked upgrades"][0])
+    gold = df["gold"][0]
+
+    print(lockedUpgrades)
+    print(gold)
+    lockedUpgrades.remove(sortedUpgrades[0][location])
+    gold -= sortedUpgrades[1][location]
+    print(lockedUpgrades)
+    print(gold)
+
+    df.at[0, "gold"] = gold
+    df.at[0, "locked upgrades"] = lockedUpgrades
+    df.to_csv(allData_path, index=False)
+    shopPage(gold, lockedUpgrades)
+    
+
+            
+
+def inventoryPage(lockedUpgrades):
     global INVENTORY_ITEMS_TOP
     global INVENTORY_ITEMS_BOTTOM
     inventoryItemsTop = INVENTORY_ITEMS_TOP.copy()
     inventoryItemsBottom = INVENTORY_ITEMS_BOTTOM.copy()
     currentScreen = ["upgrade screen", INVENTORY_SCREEN_UPGRADE_TAB]
+    setUpInventory(lockedUpgrades)
 
     run = True
     while(run):
@@ -281,33 +316,40 @@ def updateCurrentLoadout():
         if(INVENTORY_ITEMS_TOP[i] != ""):
             currentLoadoutList.append(INVENTORY_ITEMS_TOP[i])
     
-
     print(currentLoadoutList)
     df.at[0, "current loadout"] = currentLoadoutList
     df.to_csv(allData_path, index=False)
     print(f"current: {df["current loadout"][0]}")
 
-def setUpInventory():
+def setUpInventory(lockedUpgrades):
     global INVENTORY_ITEMS_TOP
     global INVENTORY_ITEMS_BOTTOM
 
     df = pd.read_csv(allData_path)
     current_loadout = ast.literal_eval(df["current loadout"][0])
     print(f"thing thing{current_loadout}")
+    unlockedUpgrades = findUnlockedUpgrades(lockedUpgrades)
     
-    for i in range(len(main.UPGRADE_LIST)):
-        if(main.UPGRADE_LIST[i] in current_loadout):
+    for i in range(len(unlockedUpgrades)):
+        if(unlockedUpgrades[i] in current_loadout):
             for t in range(len(INVENTORY_ITEMS_TOP)):
                 if(INVENTORY_ITEMS_TOP[t] == ""):
-                    INVENTORY_ITEMS_TOP[t] = main.UPGRADE_LIST[i]
+                    INVENTORY_ITEMS_TOP[t] = unlockedUpgrades[i]
                     break
         else:
             for t in range(len(INVENTORY_ITEMS_BOTTOM)):
                 if(INVENTORY_ITEMS_BOTTOM[t] == ""):
-                    INVENTORY_ITEMS_BOTTOM[t] = main.UPGRADE_LIST[i]
+                    INVENTORY_ITEMS_BOTTOM[t] = unlockedUpgrades[i]
                     break
     print(INVENTORY_ITEMS_TOP)
     print(INVENTORY_ITEMS_BOTTOM)
+
+def findUnlockedUpgrades(lockedUpgrades):
+    unlockedUpgrades = []
+    for i in range(len(main.UPGRADE_LIST)):
+        if(not(main.UPGRADE_LIST[i] in lockedUpgrades)):
+            unlockedUpgrades.append(main.UPGRADE_LIST[i])
+    return unlockedUpgrades
 
 
 def createFiles():
@@ -363,8 +405,19 @@ def createUnlockSlots():
         while(current_location[0] + SLOT_SIZE <= SHOP_SCREEN_UPGRADE_TAB_LOCATIONS[1][1][0]):
             SHOP_SLOTS.append(current_location.copy())
             current_location[0] += SLOT_SIZE + 5
-        current_location[1] += SLOT_SIZE + 5
+        current_location[1] += SLOT_SIZE + 30
         current_location[0] = SHOP_SCREEN_UPGRADE_TAB_LOCATIONS[1][0][0]
+
+def sortLockedUpgrades(lockedUpgrades):
+    sortedList = [[],[]]
+
+    for i in range(200):
+        for t in range(len(UPGRADE_PRICES)):
+            if(i * 5 == UPGRADE_PRICES[t]):
+                if(main.UPGRADE_LIST[t] in lockedUpgrades):
+                    sortedList[0].append(main.UPGRADE_LIST[t])
+                    sortedList[1].append(UPGRADE_PRICES[t])
+    return sortedList
 
         
 
