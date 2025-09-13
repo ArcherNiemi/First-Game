@@ -109,6 +109,10 @@ def homePage():
                     main.continueGame()
                 elif(clickpos[0] >= SHOP_LOCATION[0] and clickpos[0] <= SHOP_LOCATION[1] and clickpos[1] >= SHOP_LOCATION[2] and clickpos[1] <= SHOP_LOCATION[3]):
                     shopPage(amountOfGold, lockedUpgrades)
+                    df = pd.read_csv(allData_path)
+                    amountOfGold = df["gold"][0]
+                    highScore = df["high score"][0]
+                    lockedUpgrades = ast.literal_eval(df["locked upgrades"][0])
                 elif(clickpos[0] >= INVENTORY_LOCATION[0] and clickpos[0] <= INVENTORY_LOCATION[1] and clickpos[1] >= INVENTORY_LOCATION[2] and clickpos[1] <= INVENTORY_LOCATION[3]):
                     inventoryPage(lockedUpgrades)
         homePageDraw(amountOfGold, highScore)
@@ -215,17 +219,15 @@ def buyItem(sortedUpgrades, location):
     df.at[0, "locked upgrades"] = lockedUpgrades
     df.to_csv(allData_path, index=False)
     shopPage(gold, lockedUpgrades)
-    
-
             
 
 def inventoryPage(lockedUpgrades):
     global INVENTORY_ITEMS_TOP
     global INVENTORY_ITEMS_BOTTOM
+    setUpInventory(lockedUpgrades)
     inventoryItemsTop = INVENTORY_ITEMS_TOP.copy()
     inventoryItemsBottom = INVENTORY_ITEMS_BOTTOM.copy()
     currentScreen = ["upgrade screen", INVENTORY_SCREEN_UPGRADE_TAB]
-    setUpInventory(lockedUpgrades)
 
     run = True
     while(run):
@@ -324,6 +326,10 @@ def updateCurrentLoadout():
 def setUpInventory(lockedUpgrades):
     global INVENTORY_ITEMS_TOP
     global INVENTORY_ITEMS_BOTTOM
+    for i in range(len(INVENTORY_ITEMS_TOP)):
+        INVENTORY_ITEMS_TOP[i] = ""
+    for i in range(len(INVENTORY_ITEMS_BOTTOM)):
+        INVENTORY_ITEMS_BOTTOM[i] = ""
 
     df = pd.read_csv(allData_path)
     current_loadout = ast.literal_eval(df["current loadout"][0])
@@ -331,7 +337,7 @@ def setUpInventory(lockedUpgrades):
     unlockedUpgrades = findUnlockedUpgrades(lockedUpgrades)
     
     for i in range(len(unlockedUpgrades)):
-        if(unlockedUpgrades[i] in current_loadout):
+        if(main.UPGRADE_LIST[i] in current_loadout):
             for t in range(len(INVENTORY_ITEMS_TOP)):
                 if(INVENTORY_ITEMS_TOP[t] == ""):
                     INVENTORY_ITEMS_TOP[t] = unlockedUpgrades[i]
@@ -341,8 +347,8 @@ def setUpInventory(lockedUpgrades):
                 if(INVENTORY_ITEMS_BOTTOM[t] == ""):
                     INVENTORY_ITEMS_BOTTOM[t] = unlockedUpgrades[i]
                     break
-    print(INVENTORY_ITEMS_TOP)
-    print(INVENTORY_ITEMS_BOTTOM)
+    print(f"setUp: {INVENTORY_ITEMS_TOP}")
+    print(f"setUp: {INVENTORY_ITEMS_BOTTOM}")
 
 def findUnlockedUpgrades(lockedUpgrades):
     unlockedUpgrades = []
