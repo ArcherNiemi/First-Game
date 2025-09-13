@@ -29,7 +29,8 @@ PLAY_BOX = pygame.transform.scale(pygame.image.load("images/play_box.png"), (PLA
 GOLD = pygame.transform.scale(pygame.image.load("images/BB_Coin.png"), (GOLD_SIZE, GOLD_SIZE))
 SHOP = pygame.transform.scale(pygame.image.load("images/[CITYPNG.COM]Download Shopping Store Market Icon PNG - 800x800.png"), (ICON_SIZE, ICON_SIZE))
 INVENTORY = pygame.transform.scale(pygame.image.load("images/pngtree-pair-of-crossed-knight-swords-against-background-of-wooden-scandinavian-shield-png-image_6318863.png"), (ICON_SIZE, ICON_SIZE + 30))
-INVENTORY_SCREEN = pygame.transform.scale(pygame.image.load("images/inventory_screen.png"), (SCREEN_X, SCREEN_Y))
+INVENTORY_SCREEN_UPGRADE_TAB = pygame.transform.scale(pygame.image.load("images/inventory_screen_upgrade_tab.png"), (SCREEN_X, SCREEN_Y))
+INVENTORY_SCREEN_COSMETICS_TAB = pygame.transform.scale(pygame.image.load("images/inventory_screen_cosmetics_tab.png"), (SCREEN_X, SCREEN_Y))
 SHOP_SCREEN_UPGRADE_TAB = pygame.transform.scale(pygame.image.load("images/BB_Shop_-_blue_tab_selected.png"), (SCREEN_X, SCREEN_Y))
 SHOP_SCREEN_COSMETICS_TAB = pygame.transform.scale(pygame.image.load("images/BB_Shop_-_yellow_tab_selected.png"), (SCREEN_X, SCREEN_Y))
 SHOP_SCREEN_PRESTIGE_TAB = pygame.transform.scale(pygame.image.load("images/BB_Shop_-_red_tab_selected.png"), (SCREEN_X, SCREEN_Y))
@@ -53,9 +54,11 @@ SHOP_SCREEN_LOCATIONS = (((SCREEN_TOP_LEFT[1] + 18 * SCREEN_PIXIL, SCREEN_TOP_LE
                           (SCREEN_TOP_LEFT[0] + 16.5 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 49 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 82 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 23 * SCREEN_PIXIL))
 
 INVENTORY_LOCATION = (10, 10 + ICON_SIZE,  SHOP_Y + SHOP.get_height() + 15, SHOP_Y + SHOP.get_height() + 15 + INVENTORY.get_height())
-INVENTORY_SCREEN_LOCATIONS = ((SCREEN_TOP_LEFT[1] + 1 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 12 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[0] + 79 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 88 * SCREEN_PIXIL),(SCREEN_TOP_LEFT[0] + 89 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 98 * SCREEN_PIXIL))
-INVENTORY_TOP = ((SCREEN_TOP_LEFT[0] + 5 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 19 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[0] + 96 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 47 * SCREEN_PIXIL))
-INVENTORY_BOTTOM = ((SCREEN_TOP_LEFT[0] + 5 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 57 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[0] + 96 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 121 * SCREEN_PIXIL))
+INVENTORY_SCREEN_LOCATIONS = (((SCREEN_TOP_LEFT[1] + 1 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 12 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[0] + 79 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 88 * SCREEN_PIXIL),(SCREEN_TOP_LEFT[0] + 89 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 98 * SCREEN_PIXIL)), #x and check mark locations
+                              ((SCREEN_TOP_LEFT[1] + 19 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 29 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[0] + 5 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 47 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[0] + 54 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 97 * SCREEN_PIXIL)), #tab locations
+                              (SCREEN_TOP_LEFT[1] + 23 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 26 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 75 * SCREEN_PIXIL)) #word locations
+INVENTORY_TOP = ((SCREEN_TOP_LEFT[0] + 5 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 36 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[0] + 96 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 64 * SCREEN_PIXIL))
+INVENTORY_BOTTOM = ((SCREEN_TOP_LEFT[0] + 5 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 71 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[0] + 96 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 121 * SCREEN_PIXIL))
 
 INVENTORY_SLOTS_TOP = []
 INVENTORY_SLOTS_BOTTOM = []
@@ -175,6 +178,7 @@ def inventoryPage():
     global INVENTORY_ITEMS_BOTTOM
     inventoryItemsTop = INVENTORY_ITEMS_TOP.copy()
     inventoryItemsBottom = INVENTORY_ITEMS_BOTTOM.copy()
+    currentScreen = ["upgrade screen", INVENTORY_SCREEN_UPGRADE_TAB]
 
     run = True
     while(run):
@@ -184,11 +188,11 @@ def inventoryPage():
                 pygame.quit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 clickpos = event.pos
-                if(clickpos[1] >= INVENTORY_SCREEN_LOCATIONS[0][0] and clickpos[1] <= INVENTORY_SCREEN_LOCATIONS[0][1]):
-                    if(clickpos[0] >= INVENTORY_SCREEN_LOCATIONS[1][0] and clickpos[0] <= INVENTORY_SCREEN_LOCATIONS[1][1]):
+                if(clickpos[1] >= INVENTORY_SCREEN_LOCATIONS[0][0][0] and clickpos[1] <= INVENTORY_SCREEN_LOCATIONS[0][0][1]):
+                    if(clickpos[0] >= INVENTORY_SCREEN_LOCATIONS[0][1][0] and clickpos[0] <= INVENTORY_SCREEN_LOCATIONS[0][1][1]):
                         print("x")
                         run = False
-                    elif(clickpos[0] >= INVENTORY_SCREEN_LOCATIONS[2][0] and clickpos[0] <= INVENTORY_SCREEN_LOCATIONS[2][1]):
+                    elif(clickpos[0] >= INVENTORY_SCREEN_LOCATIONS[0][2][0] and clickpos[0] <= INVENTORY_SCREEN_LOCATIONS[0][2][1]):
                         print("check")
                         INVENTORY_ITEMS_TOP = inventoryItemsTop.copy()
                         INVENTORY_ITEMS_BOTTOM = inventoryItemsBottom.copy()
@@ -196,45 +200,60 @@ def inventoryPage():
                         print(INVENTORY_ITEMS_TOP)
                         print(INVENTORY_ITEMS_BOTTOM)
                         run = False
-                for i in range(len(INVENTORY_SLOTS_TOP)):
-                    if(clickpos[0] >= INVENTORY_SLOTS_TOP[i][0] and clickpos[1] >= INVENTORY_SLOTS_TOP[i][1] and
-                       clickpos[0] <= INVENTORY_SLOTS_TOP[i][0] + SLOT_SIZE and clickpos[1] <= INVENTORY_SLOTS_TOP[i][1] + SLOT_SIZE):
-                        print(i)
-                        if(not(inventoryItemsTop == "")):
-                            for t in range(len(inventoryItemsBottom)):
-                                if(inventoryItemsBottom[t] == ""):
-                                    inventoryItemsBottom[t] = inventoryItemsTop[i]
-                                    inventoryItemsTop[i] = ""
-                                    print(inventoryItemsTop)
-                                    break
-                        break
-                for i in range(len(INVENTORY_SLOTS_BOTTOM)):
-                    if(clickpos[0] >= INVENTORY_SLOTS_BOTTOM[i][0] and clickpos[1] >= INVENTORY_SLOTS_BOTTOM[i][1] and
-                       clickpos[0] <= INVENTORY_SLOTS_BOTTOM[i][0] + SLOT_SIZE and clickpos[1] <= INVENTORY_SLOTS_BOTTOM[i][1] + SLOT_SIZE):
-                        print(i)
-                        if(not(inventoryItemsBottom == "")):
-                            for t in range(len(inventoryItemsTop)):
-                                if(inventoryItemsTop[t] == ""):
-                                    inventoryItemsTop[t] = inventoryItemsBottom[i]
-                                    inventoryItemsBottom[i] = ""
-                                    print(inventoryItemsBottom)
-                                    break
-                        break
-        inventoryPageDraw(inventoryItemsTop, inventoryItemsBottom)
+                elif(clickpos[1] >= INVENTORY_SCREEN_LOCATIONS[1][0][0] and clickpos[1] <= INVENTORY_SCREEN_LOCATIONS[1][0][1]):
+                    if(clickpos[0] >= INVENTORY_SCREEN_LOCATIONS[1][1][0] and clickpos[0] <= INVENTORY_SCREEN_LOCATIONS[1][1][1]):
+                        currentScreen[0] = "upgrade screen"
+                        currentScreen[1] = INVENTORY_SCREEN_UPGRADE_TAB
+                    elif(clickpos[0] >= INVENTORY_SCREEN_LOCATIONS[1][2][0] and clickpos[0] <= INVENTORY_SCREEN_LOCATIONS[1][2][1]):
+                        currentScreen[0] = "cosmetics screen"
+                        currentScreen[1] = INVENTORY_SCREEN_COSMETICS_TAB
+                if(currentScreen[0] == "upgrade screen"):
+                    for i in range(len(INVENTORY_SLOTS_TOP)):
+                        if(clickpos[0] >= INVENTORY_SLOTS_TOP[i][0] and clickpos[1] >= INVENTORY_SLOTS_TOP[i][1] and
+                        clickpos[0] <= INVENTORY_SLOTS_TOP[i][0] + SLOT_SIZE and clickpos[1] <= INVENTORY_SLOTS_TOP[i][1] + SLOT_SIZE):
+                            print(i)
+                            if(not(inventoryItemsTop == "")):
+                                for t in range(len(inventoryItemsBottom)):
+                                    if(inventoryItemsBottom[t] == ""):
+                                        inventoryItemsBottom[t] = inventoryItemsTop[i]
+                                        inventoryItemsTop[i] = ""
+                                        print(inventoryItemsTop)
+                                        break
+                            break
+                    for i in range(len(INVENTORY_SLOTS_BOTTOM)):
+                        if(clickpos[0] >= INVENTORY_SLOTS_BOTTOM[i][0] and clickpos[1] >= INVENTORY_SLOTS_BOTTOM[i][1] and
+                        clickpos[0] <= INVENTORY_SLOTS_BOTTOM[i][0] + SLOT_SIZE and clickpos[1] <= INVENTORY_SLOTS_BOTTOM[i][1] + SLOT_SIZE):
+                            print(i)
+                            if(not(inventoryItemsBottom == "")):
+                                for t in range(len(inventoryItemsTop)):
+                                    if(inventoryItemsTop[t] == ""):
+                                        inventoryItemsTop[t] = inventoryItemsBottom[i]
+                                        inventoryItemsBottom[i] = ""
+                                        print(inventoryItemsBottom)
+                                        break
+                            break
+        inventoryPageDraw(inventoryItemsTop, inventoryItemsBottom, currentScreen)
 
-def inventoryPageDraw(inventoryItemsTop, inventoryItemsBottom):
+def inventoryPageDraw(inventoryItemsTop, inventoryItemsBottom, currentScreen):
     main.WIN.blit(main.BG, (0, 0))
-    main.WIN.blit(INVENTORY_SCREEN, (main.WIDTH / 2 - SCREEN_X / 2, main.HEIGHT / 2 - SCREEN_Y / 2))
+    main.WIN.blit(currentScreen[1], (main.WIDTH / 2 - SCREEN_X / 2, main.HEIGHT / 2 - SCREEN_Y / 2))
 
-    for i in range(len(main.UPGRADE_LIST)):
-        for t in range(len(inventoryItemsTop)):
-            if(inventoryItemsTop[t] == main.UPGRADE_LIST[i]):
-                main.WIN.blit(IMAGES[i], INVENTORY_SLOTS_TOP[t])
-                break
-        for t in range(len(inventoryItemsBottom)):
-            if(inventoryItemsBottom[t] == main.UPGRADE_LIST[i]):
-                main.WIN.blit(IMAGES[i], INVENTORY_SLOTS_BOTTOM[t])
-                break
+    if(currentScreen[0] == "upgrade screen"):
+        for i in range(len(main.UPGRADE_LIST)):
+            for t in range(len(inventoryItemsTop)):
+                if(inventoryItemsTop[t] == main.UPGRADE_LIST[i]):
+                    main.WIN.blit(IMAGES[i], INVENTORY_SLOTS_TOP[t])
+                    break
+            for t in range(len(inventoryItemsBottom)):
+                if(inventoryItemsBottom[t] == main.UPGRADE_LIST[i]):
+                    main.WIN.blit(IMAGES[i], INVENTORY_SLOTS_BOTTOM[t])
+                    break
+    
+    upgrade_text = FONT_SHOP.render("Upgrade", 1, "black")
+    main.WIN.blit(upgrade_text, (INVENTORY_SCREEN_LOCATIONS[2][1] - upgrade_text.get_width() / 2, INVENTORY_SCREEN_LOCATIONS[2][0]  - upgrade_text.get_height() / 2))
+
+    cosmetics_text = FONT_SHOP.render("Cosmetics", 1, "black")
+    main.WIN.blit(cosmetics_text, (INVENTORY_SCREEN_LOCATIONS[2][2] - cosmetics_text.get_width() / 2, INVENTORY_SCREEN_LOCATIONS[2][0]  - cosmetics_text.get_height() / 2))
 
     # for i in range(len(INVENTORY_SLOTS_TOP)):
     #     pygame.draw.rect(main.WIN, "orange", pygame.Rect(INVENTORY_SLOTS_TOP[i][0], INVENTORY_SLOTS_TOP[i][1], SLOT_SIZE, SLOT_SIZE))
