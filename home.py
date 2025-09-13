@@ -33,6 +33,11 @@ INVENTORY_SCREEN = pygame.transform.scale(pygame.image.load("images/inventory_sc
 SHOP_SCREEN_UPGRADE_TAB = pygame.transform.scale(pygame.image.load("images/BB_Shop_-_blue_tab_selected.png"), (SCREEN_X, SCREEN_Y))
 SHOP_SCREEN_COSMETICS_TAB = pygame.transform.scale(pygame.image.load("images/BB_Shop_-_yellow_tab_selected.png"), (SCREEN_X, SCREEN_Y))
 SHOP_SCREEN_PRESTIGE_TAB = pygame.transform.scale(pygame.image.load("images/BB_Shop_-_red_tab_selected.png"), (SCREEN_X, SCREEN_Y))
+HEAL = pygame.transform.scale(pygame.image.load("images/heal.png"), (SLOT_SIZE, SLOT_SIZE))
+HP_INCREASE = pygame.transform.scale(pygame.image.load("images/hp_increase.png"), (SLOT_SIZE, SLOT_SIZE))
+PASSIVE_HEAL = pygame.transform.scale(pygame.image.load("images/passive_heal.png"), (SLOT_SIZE, SLOT_SIZE))
+TEMP_HEARTS = pygame.transform.scale(pygame.image.load("images/temp_hearts.png"), (SLOT_SIZE, SLOT_SIZE))
+LUCK = pygame.transform.scale(pygame.image.load("images\luck.png"), (SLOT_SIZE, SLOT_SIZE))
 
 SCREEN_TOP_LEFT = (main.WIDTH / 2 - SCREEN_X / 2, main.HEIGHT / 2 - SCREEN_Y / 2)
 
@@ -58,7 +63,7 @@ INVENTORY_SLOTS_BOTTOM = []
 INVENTORY_ITEMS_TOP = []
 INVENTORY_ITEMS_BOTTOM = []
 
-IMAGES = [main.EMPTY_HEART, main.SUPER_BULLET, main.HOMING_BULLET, main.TEMP_HEART, main.FULL_HEART, main.SHRINK, main.CLOCK, main.SHIELD_FULL, main.TYPE_DECREASE, main.SCREEN_WIPE]
+IMAGES = [HP_INCREASE, LUCK, PASSIVE_HEAL, TEMP_HEARTS, HEAL, main.SHRINK, main.CLOCK, main.SHIELD_FULL, main.TYPE_DECREASE, main.SCREEN_WIPE]
 
 SHOP_BACKGROUND = pygame.Rect(300, 100, 300, 500)
 
