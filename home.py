@@ -1,5 +1,6 @@
 import main
 import SetUp
+import Upgrade
 import pygame
 import pandas as pd
 import os
@@ -15,6 +16,7 @@ FONT_TITLE = pygame.font.SysFont("arial", 100)
 FONT_SHOP = pygame.font.SysFont("arial", 25)
 FONT_INVENTORY = pygame.font.SysFont("arial", 25)
 FONT_PRESTIGE = pygame.font.SysFont("arial", 50)
+FONT_POP_UP = pygame.font.SysFont("arial", 25)
 
 PLAY_BOX_SIZE = 400
 GOLD_SIZE = 40
@@ -87,6 +89,9 @@ SHOP_BACKGROUND = pygame.Rect(300, 100, 300, 500)
 PRESTIGE_START_GOLD = 1000
 PRESTIGE_GOLD_INCREASE = 0.2
 PRESTIGE_COST_INCREASE = 0.5
+
+POP_UP_WIDTH = 600
+POP_UP_HEIGHT = 200
 
 local_appdata = os.getenv("LOCALAPPDATA")  # e.g., C:\Users\<User>\AppData\Local
 app_name = "BulletBarrage"
@@ -263,12 +268,29 @@ def inventoryPage(lockedUpgrades):
                         run = False
                     elif(clickpos[0] >= INVENTORY_SCREEN_LOCATIONS[0][2][0] and clickpos[0] <= INVENTORY_SCREEN_LOCATIONS[0][2][1]):
                         print("check")
-                        INVENTORY_ITEMS_TOP = inventoryItemsTop.copy()
-                        INVENTORY_ITEMS_BOTTOM = inventoryItemsBottom.copy()
-                        updateCurrentLoadout()
+                        count = 0
+                        commons = 0
                         print(INVENTORY_ITEMS_TOP)
-                        print(INVENTORY_ITEMS_BOTTOM)
-                        run = False
+                        for i in range(len(inventoryItemsTop)):
+                            if(inventoryItemsTop[i] != ""):
+                                count += 1
+                        for i in range(len(main.UPGRADE_LIST)):
+                            if(main.UPGRADE_LIST[i] in inventoryItemsTop):
+                                if(Upgrade.allUpgrades[i].rarity == "common"):
+                                    commons += 1
+                        if(count < 5):
+                            popUpMessage("You must have at least 5 upgrades selected")
+                        elif(count > 10):
+                            popUpMessage("You can't have more than 10 upgrades selected")
+                        elif(commons < 3):
+                            popUpMessage("You must have at least 3 commons")
+                        else:
+                            INVENTORY_ITEMS_TOP = inventoryItemsTop.copy()
+                            INVENTORY_ITEMS_BOTTOM = inventoryItemsBottom.copy()
+                            updateCurrentLoadout()
+                            print(INVENTORY_ITEMS_TOP)
+                            print(INVENTORY_ITEMS_BOTTOM)
+                            run = False
                 elif(clickpos[1] >= INVENTORY_SCREEN_LOCATIONS[1][0][0] and clickpos[1] <= INVENTORY_SCREEN_LOCATIONS[1][0][1]):
                     if(clickpos[0] >= INVENTORY_SCREEN_LOCATIONS[1][1][0] and clickpos[0] <= INVENTORY_SCREEN_LOCATIONS[1][1][1]):
                         currentScreen[0] = "upgrade screen"
@@ -309,12 +331,22 @@ def inventoryPageDraw(inventoryItemsTop, inventoryItemsBottom, currentScreen):
 
     if(currentScreen[0] == "upgrade screen"):
         for i in range(len(main.UPGRADE_LIST)):
+            if(Upgrade.allUpgrades[i].rarity == "common"):
+                color = "white"
+            elif(Upgrade.allUpgrades[i].rarity == "rare"):
+                color ="green"
+            elif(Upgrade.allUpgrades[i].rarity == "epic"):
+                color = "purple"
+            elif(Upgrade.allUpgrades[i].rarity == "legendary"):
+                color = "yellow"
             for t in range(len(inventoryItemsTop)):
                 if(inventoryItemsTop[t] == main.UPGRADE_LIST[i]):
+                    pygame.draw.rect(main.WIN, color, pygame.Rect(INVENTORY_SLOTS_TOP[t][0],INVENTORY_SLOTS_TOP[t][1], SLOT_SIZE, SLOT_SIZE))
                     main.WIN.blit(IMAGES[i], INVENTORY_SLOTS_TOP[t])
                     break
             for t in range(len(inventoryItemsBottom)):
                 if(inventoryItemsBottom[t] == main.UPGRADE_LIST[i]):
+                    pygame.draw.rect(main.WIN, color, pygame.Rect(INVENTORY_SLOTS_BOTTOM[t][0],INVENTORY_SLOTS_BOTTOM[t][1], SLOT_SIZE, SLOT_SIZE))
                     main.WIN.blit(IMAGES[i], INVENTORY_SLOTS_BOTTOM[t])
                     break
     
@@ -428,6 +460,15 @@ def sortLockedUpgrades(lockedUpgrades):
                     sortedList[0].append(main.UPGRADE_LIST[t])
                     sortedList[1].append(UPGRADE_PRICES[t])
     return sortedList
+
+def popUpMessage(message):
+    pygame.draw.rect(main.WIN, "black", pygame.Rect(main.WIDTH / 2 - POP_UP_WIDTH / 2, main.HEIGHT / 2 - POP_UP_HEIGHT / 2, POP_UP_WIDTH, POP_UP_HEIGHT))
+
+    pop_up_text = FONT_POP_UP.render(message, 1, "white")
+    main.WIN.blit(pop_up_text, (main.WIDTH / 2 - pop_up_text.get_width() / 2, main.HEIGHT / 2 - pop_up_text.get_height() / 2))
+
+    pygame.display.update()
+    pygame.time.delay(1500)
 
 def versionCheck():
     df = pd.read_csv(allData_path)

@@ -86,8 +86,10 @@ luckIncrease = Upgrade("stat increase", "common", 1, None, None)
 passiveHealIncrease = Upgrade("stat increase", "common", 1, None, None)
 tempHeartIncrease = Upgrade("stat increase", "common", 2, None, None)
 heal = Upgrade("stat increase", "common", 3, None,  None)
-shield = Upgrade("ability", "rare", SHIELD_UPGRADE_AMOUNT, 0, SHIELD_COOLDOWN)
 shrink = Upgrade("ability", "common", SHRINK_UPGRADE_AMOUNT, 0, SHRINK_COOLDOWN)
 timeSlow = Upgrade("ability", "common", TIME_SLOW_UPGRADE_AMOUNT, 0, TIME_SLOW_COOLDOWN)
-screenWipe = Upgrade("ability", "legendary", SCREEN_WIPE_UPGRADE_AMOUNT, 0, SCREEN_WIPE_COOLDOWN)
+shield = Upgrade("ability", "rare", SHIELD_UPGRADE_AMOUNT, 0, SHIELD_COOLDOWN)
 typeDecrease = Upgrade("ability", "epic", TYPE_DECREASE_UPGRADE_AMOUNT, 0, TYPE_DECREASE_COOLDOWN)
+screenWipe = Upgrade("ability", "legendary", SCREEN_WIPE_UPGRADE_AMOUNT, 0, SCREEN_WIPE_COOLDOWN)
+
+allUpgrades = [hpIncrease, luckIncrease, passiveHealIncrease, tempHeartIncrease, heal, shrink, timeSlow, shield, typeDecrease, screenWipe]
