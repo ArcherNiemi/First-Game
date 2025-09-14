@@ -10,7 +10,7 @@ pygame.init()
 
 FONT_HOME = pygame.font.SysFont("arial", 80)
 FONT_PLAY = pygame.font.SysFont("arial", 45)
-FONT_GOLD = pygame.font.SysFont("arial", 45)
+FONT_GOLD = pygame.font.SysFont("arial", 40)
 FONT_UNLOCK = pygame.font.SysFont("arial", 20)
 FONT_TITLE = pygame.font.SysFont("arial", 100)
 FONT_SHOP = pygame.font.SysFont("arial", 25)
@@ -64,7 +64,7 @@ SHOP_SCREEN_UPGRADE_TAB_LOCATIONS = ((SCREEN_TOP_LEFT[0] + 6 * SCREEN_PIXIL, SCR
 
 SHOP_SCREEN_PRESTIGE_TAB_LOCATIONS = ((SCREEN_TOP_LEFT[0] + 50 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 69 * SCREEN_PIXIL), #prestige text
                                      (SCREEN_TOP_LEFT[0] + 35 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 84 * SCREEN_PIXIL), #coin location
-                                     ((SCREEN_TOP_LEFT[0] + 6 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 42 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[0] + 96 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 77 * SCREEN_PIXIL))) #unlock start and end
+                                     ((SCREEN_TOP_LEFT[0] + 17 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 84 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[1] + 60 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 99 * SCREEN_PIXIL))) #unlock start and end
 
 INVENTORY_LOCATION = (10, 10 + ICON_SIZE,  SHOP_Y + SHOP.get_height() + 15, SHOP_Y + SHOP.get_height() + 15 + INVENTORY.get_height())
 INVENTORY_SCREEN_LOCATIONS = (((SCREEN_TOP_LEFT[1] + 1 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 12 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[0] + 79 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 88 * SCREEN_PIXIL),(SCREEN_TOP_LEFT[0] + 89 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 98 * SCREEN_PIXIL)), #x and check mark locations
@@ -86,8 +86,7 @@ UPGRADE_PRICES = [10, 50, 50, 50, 5, 25, 25, 25, 100, 250]
 
 SHOP_BACKGROUND = pygame.Rect(300, 100, 300, 500)
 
-PRESTIGE_START_GOLD = 1000
-PRESTIGE_GOLD_INCREASE = 0.2
+PRESTIGE_START_COST = 20
 PRESTIGE_COST_INCREASE = 0.5
 
 POP_UP_WIDTH = 600
@@ -111,7 +110,11 @@ def homePage():
     df = pd.read_csv(allData_path)
     amountOfGold = df["gold"][0]
     highScore = df["high score"][0]
+    prestigeLevel = df["prestige level"][0]
     lockedUpgrades = ast.literal_eval(df["locked upgrades"][0])
+
+    df2 = pd.read_csv(gameSaveData_path)
+    level = df2["level"][0]
     while(run):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -121,19 +124,31 @@ def homePage():
                 clickpos = event.pos
                 if(clickpos[0] >= NEW_GAME_LOCATION[0] and clickpos[0] <= NEW_GAME_LOCATION[1] and clickpos[1] >= NEW_GAME_LOCATION[2] and clickpos[1] <= NEW_GAME_LOCATION[3]):
                     main.main(1)
-                elif(clickpos[0] >= CONTINUE_LOCATION[0] and clickpos[0] <= CONTINUE_LOCATION[1] and clickpos[1] >= CONTINUE_LOCATION[2] and clickpos[1] <= CONTINUE_LOCATION[3]):
-                    main.continueGame()
-                elif(clickpos[0] >= SHOP_LOCATION[0] and clickpos[0] <= SHOP_LOCATION[1] and clickpos[1] >= SHOP_LOCATION[2] and clickpos[1] <= SHOP_LOCATION[3]):
-                    shopPage(amountOfGold, lockedUpgrades)
                     df = pd.read_csv(allData_path)
                     amountOfGold = df["gold"][0]
                     highScore = df["high score"][0]
                     lockedUpgrades = ast.literal_eval(df["locked upgrades"][0])
+                elif(clickpos[0] >= CONTINUE_LOCATION[0] and clickpos[0] <= CONTINUE_LOCATION[1] and clickpos[1] >= CONTINUE_LOCATION[2] and clickpos[1] <= CONTINUE_LOCATION[3]):
+                    if(level != 0):
+                        main.continueGame()
+                        df = pd.read_csv(allData_path)
+                        amountOfGold = df["gold"][0]
+                        highScore = df["high score"][0]
+                        lockedUpgrades = ast.literal_eval(df["locked upgrades"][0])
+                    else:
+                        popUpMessage("No Save Data")
+                elif(clickpos[0] >= SHOP_LOCATION[0] and clickpos[0] <= SHOP_LOCATION[1] and clickpos[1] >= SHOP_LOCATION[2] and clickpos[1] <= SHOP_LOCATION[3]):
+                    shopPage(amountOfGold, lockedUpgrades, prestigeLevel)
+                    df = pd.read_csv(allData_path)
+                    amountOfGold = df["gold"][0]
+                    highScore = df["high score"][0]
+                    prestigeLevel = df["prestige level"][0]
+                    lockedUpgrades = ast.literal_eval(df["locked upgrades"][0])
                 elif(clickpos[0] >= INVENTORY_LOCATION[0] and clickpos[0] <= INVENTORY_LOCATION[1] and clickpos[1] >= INVENTORY_LOCATION[2] and clickpos[1] <= INVENTORY_LOCATION[3]):
                     inventoryPage(lockedUpgrades)
-        homePageDraw(amountOfGold, highScore)
+        homePageDraw(amountOfGold, highScore, prestigeLevel)
 
-def homePageDraw(amountOfGold, highScore):
+def homePageDraw(amountOfGold, highScore, prestigeLevel):
     main.WIN.blit(main.BG, (0, 0))
     main.WIN.blit(PLAY_BOX, (main.WIDTH - PLAY_BOX.get_width(), main.HEIGHT - PLAY_BOX.get_height()))
 
@@ -143,6 +158,9 @@ def homePageDraw(amountOfGold, highScore):
 
     high_score_text = FONT_GOLD.render(f"High Score: {highScore}", 1, "black")
     main.WIN.blit(high_score_text, (10, 10))
+
+    prestige_text = FONT_GOLD.render(f"Level: {prestigeLevel}", 1, "black")
+    main.WIN.blit(prestige_text, (10, 10 + high_score_text.get_height()))
 
     main.WIN.blit(SHOP, (10, SHOP_Y))
 
@@ -155,14 +173,14 @@ def homePageDraw(amountOfGold, highScore):
     play_text = FONT_HOME.render("Play", 1, "black")
     continue_text = FONT_PLAY.render("Continue", 1, "black")
     new_game_text = FONT_PLAY.render("New Game", 1, "black")
-    main.WIN.blit(title_text, (main.WIDTH / 2 - title_text.get_width() / 2, 50))
+    main.WIN.blit(title_text, (main.WIDTH / 2 - title_text.get_width() / 2, 80))
     main.WIN.blit(play_text, (main.WIDTH - PLAY_BOX.get_width() / 2 - play_text.get_width() / 2, main.HEIGHT - PLAY_BOX.get_height() * 0.8 - play_text.get_height() / 2))
     main.WIN.blit(continue_text, (main.WIDTH - 78 * PLAY_BOX.get_width() / 200 - continue_text.get_width() / 2, main.HEIGHT - PLAY_BOX.get_height() * 0.45 - continue_text.get_height() / 2))
     main.WIN.blit(new_game_text, (main.WIDTH -  78 * PLAY_BOX.get_width() / 200 - new_game_text.get_width() / 2, main.HEIGHT - PLAY_BOX.get_height() * 0.15 - new_game_text.get_height() / 2))
 
     pygame.display.update()
 
-def shopPage(amountOfGold, lockedUpgrades):
+def shopPage(amountOfGold, lockedUpgrades, prestigeLevel):
     currentScreen = ["upgrade screen", SHOP_SCREEN_UPGRADE_TAB]
     run = True
     sortedUpgrades = sortLockedUpgrades(lockedUpgrades)
@@ -183,14 +201,24 @@ def shopPage(amountOfGold, lockedUpgrades):
                 elif(clickpos[0] >= SHOP_SCREEN_LOCATIONS[1][0][0] and clickpos[0] <= SHOP_SCREEN_LOCATIONS[1][0][1] and 
                      clickpos[1] >= SHOP_SCREEN_LOCATIONS[1][1][0] and clickpos[1] <= SHOP_SCREEN_LOCATIONS[1][1][1]):
                     run = False
-                for i in range(len(sortedUpgrades[0])):
-                    if(clickpos[0] >= SHOP_SLOTS[i][0] and clickpos[1] >= SHOP_SLOTS[i][1] and clickpos[0] <= SHOP_SLOTS[i][0] + SLOT_SIZE and clickpos[1] <= SHOP_SLOTS[i][1] + SLOT_SIZE):
-                        print(f"{sortedUpgrades[0][i]}")
-                        run = False
-                        buyItem(sortedUpgrades, i)
-        shopPageDraw(currentScreen, amountOfGold, sortedUpgrades)
+                if(currentScreen[0] == "upgrade screen"):
+                    for i in range(len(sortedUpgrades[0])):
+                        if(clickpos[0] >= SHOP_SLOTS[i][0] and clickpos[1] >= SHOP_SLOTS[i][1] and clickpos[0] <= SHOP_SLOTS[i][0] + SLOT_SIZE and clickpos[1] <= SHOP_SLOTS[i][1] + SLOT_SIZE):
+                            print(f"{sortedUpgrades[0][i]}")
+                            run = False
+                            buyItem(sortedUpgrades, i, prestigeLevel)
+                elif(currentScreen[0] == "cosmetic screen"):
+                    pass
+                elif(currentScreen[0] == "prestige screen"):
+                    if(clickpos[0] >= SHOP_SCREEN_PRESTIGE_TAB_LOCATIONS[2][0][0] and clickpos[0] <= SHOP_SCREEN_PRESTIGE_TAB_LOCATIONS[2][0][1] and
+                       clickpos[1] >= SHOP_SCREEN_PRESTIGE_TAB_LOCATIONS[2][1][0] and clickpos[1] <= SHOP_SCREEN_PRESTIGE_TAB_LOCATIONS[2][1][1]):
+                        happened = prestige()
+                        if(happened == True):
+                            run = False
 
-def shopPageDraw(currentScreen, amountOfGold, sortedUpgrades):
+        shopPageDraw(currentScreen, amountOfGold, sortedUpgrades, prestigeLevel)
+
+def shopPageDraw(currentScreen, amountOfGold, sortedUpgrades, prestigeLevel):
     main.WIN.blit(main.BG, (0, 0))
     main.WIN.blit(currentScreen[1], (main.WIDTH / 2 - SCREEN_X / 2, main.HEIGHT / 2 - SCREEN_Y / 2))
 
@@ -223,27 +251,61 @@ def shopPageDraw(currentScreen, amountOfGold, sortedUpgrades):
 
         main.WIN.blit(pygame.transform.scale(GOLD,(PRESTIGE_GOLD_SIZE, PRESTIGE_GOLD_SIZE)), (SHOP_SCREEN_PRESTIGE_TAB_LOCATIONS[1][0] - PRESTIGE_GOLD_SIZE / 2, SHOP_SCREEN_PRESTIGE_TAB_LOCATIONS[1][1] - PRESTIGE_GOLD_SIZE / 2))
 
-        prestige_gold_text = FONT_PRESTIGE.render(f"{PRESTIGE_START_GOLD}", 1, "gold")
+        prestige_gold_text = FONT_PRESTIGE.render(f"{int(prestigeLevel * PRESTIGE_START_COST * PRESTIGE_COST_INCREASE + PRESTIGE_START_COST)}", 1, "gold")
         main.WIN.blit(prestige_gold_text, (SHOP_SCREEN_PRESTIGE_TAB_LOCATIONS[1][0] + PRESTIGE_GOLD_SIZE / 2, SHOP_SCREEN_PRESTIGE_TAB_LOCATIONS[1][1] - prestige_tab_text.get_height() / 2))
 
     pygame.display.update()
 
-def buyItem(sortedUpgrades, location):
+def buyItem(sortedUpgrades, location, prestigeLevel):
     df = pd.read_csv(allData_path)
     lockedUpgrades = ast.literal_eval(df["locked upgrades"][0])
     gold = df["gold"][0]
+    current_loadout = ast.literal_eval(df["current loadout"][0])
 
-    print(lockedUpgrades)
-    print(gold)
-    lockedUpgrades.remove(sortedUpgrades[0][location])
-    gold -= sortedUpgrades[1][location]
-    print(lockedUpgrades)
-    print(gold)
+    if(gold >= sortedUpgrades[1][location]):
+        print(lockedUpgrades)
+        print(gold)
+        lockedUpgrades.remove(sortedUpgrades[0][location])
+        gold -= sortedUpgrades[1][location]
+        print(lockedUpgrades)
+        print(gold)
+        current_loadout.append(sortedUpgrades[0][location])
 
-    df.at[0, "gold"] = gold
-    df.at[0, "locked upgrades"] = lockedUpgrades
-    df.to_csv(allData_path, index=False)
-    shopPage(gold, lockedUpgrades)
+        df.at[0, "gold"] = gold
+        df.at[0, "locked upgrades"] = lockedUpgrades
+        df.at[0, "current loadout"] = current_loadout
+        df.to_csv(allData_path, index=False)
+        shopPage(gold, lockedUpgrades, prestigeLevel)
+    else:
+        popUpMessage("You don't have enough gold")
+
+def prestige():
+    df1 = pd.read_csv(allData_path)
+    prestige_level = df1["prestige level"][0]
+    gold = df1["gold"][0]
+    print(prestige_level * PRESTIGE_START_COST * PRESTIGE_COST_INCREASE + PRESTIGE_START_COST)
+    if(gold >= prestige_level * PRESTIGE_START_COST * PRESTIGE_COST_INCREASE + PRESTIGE_START_COST):
+        prestige_level += 1
+
+        data1 = {"level": [0],
+             "upgrades": [[]],
+             "locked upgrades": [[]]}
+
+        data2 = {"gold": [0],
+                "high score": [0],
+                "prestige level": [prestige_level],
+                "version": [SetUp.current_version],
+                "locked upgrades": [main.UPGRADE_LIST],
+                "current loadout": [[]]}
+        
+        df1 = pd.DataFrame(data1)
+        df1.to_csv(gameSaveData_path, index=False)
+        df2 = pd.DataFrame(data2)
+        df2.to_csv(allData_path, index=False)
+        return True
+    else:
+        popUpMessage("You don't have enough gold")
+        return False
             
 
 def inventoryPage(lockedUpgrades):
@@ -389,9 +451,13 @@ def setUpInventory(lockedUpgrades):
     unlockedUpgrades = findUnlockedUpgrades(lockedUpgrades)
     
     for i in range(len(unlockedUpgrades)):
-        if(main.UPGRADE_LIST[i] in current_loadout):
+        print(1)
+        if(unlockedUpgrades[i] in current_loadout):
+            print(2)
             for t in range(len(INVENTORY_ITEMS_TOP)):
+                print(3)
                 if(INVENTORY_ITEMS_TOP[t] == ""):
+                    print(4)
                     INVENTORY_ITEMS_TOP[t] = unlockedUpgrades[i]
                     break
         else:

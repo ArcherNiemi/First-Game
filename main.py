@@ -74,6 +74,7 @@ FONT_UPGRADE = pygame.font.SysFont("arial", 28)
 FONT_BUTTONS = pygame.font.SysFont("arial", 40)
 FONT_TITLE = pygame.font.SysFont("arial", 80)
 FONT_RESTART = pygame.font.SysFont("arial", 80)
+FONT_INVETORY = pygame.font.SysFont("arial", 60)
 
 START_DELAY_BETWEEN_BULLETS = 2000
 START_AMOUNT_OF_BULLETS_PER_WAVE = 5
@@ -153,6 +154,8 @@ INVENTORY_SLOTS = [(INVENTORY_CORNER_WIDTH + INVENTORY_PIXEL + INVENTORY_DEDUCTI
                    (INVENTORY_CORNER_WIDTH + INVENTORY_PIXEL * 18 + INVENTORY_DEDUCTION / 2, INVENTORY_CORNER_HEIGHT + INVENTORY_PIXEL + INVENTORY_DEDUCTION / 2), (INVENTORY_CORNER_WIDTH + INVENTORY_PIXEL * 18 + INVENTORY_DEDUCTION / 2, INVENTORY_CORNER_HEIGHT + INVENTORY_PIXEL * 8 + INVENTORY_DEDUCTION / 2), (INVENTORY_CORNER_WIDTH + INVENTORY_PIXEL * 18 + INVENTORY_DEDUCTION / 2, INVENTORY_CORNER_HEIGHT + INVENTORY_PIXEL * 15 + INVENTORY_DEDUCTION / 2),
                    (INVENTORY_CORNER_WIDTH + INVENTORY_PIXEL * 25 + INVENTORY_DEDUCTION / 2, INVENTORY_CORNER_HEIGHT + INVENTORY_PIXEL + INVENTORY_DEDUCTION / 2), (INVENTORY_CORNER_WIDTH + INVENTORY_PIXEL * 25 + INVENTORY_DEDUCTION / 2, INVENTORY_CORNER_HEIGHT + INVENTORY_PIXEL * 8 + INVENTORY_DEDUCTION / 2), (INVENTORY_CORNER_WIDTH + INVENTORY_PIXEL * 25 + INVENTORY_DEDUCTION / 2, INVENTORY_CORNER_HEIGHT + INVENTORY_PIXEL * 15 + INVENTORY_DEDUCTION / 2)]
 INVENTORY_SLOT_SIZE = INVENTORY_PIXEL * 6
+
+PRESTIGE_GOLD_INCREASE = 0.2
 
 inventoryLocations = [3,4,5,6,7] #upgrade spot
 
@@ -362,34 +365,36 @@ def upgradeScreen(unlock_chance):
     WIN.blit(BG, (0, 0))
     upgrade = [0,0,0]
     rarity_increase = [COMMON_POWER,COMMON_POWER,COMMON_POWER]
-    upgradeColor = "white"
+    upgradeColor = []
+    rarity = []
+    amount = 3
 
     for i in range(len(upgrade)):
-        rarity = roll_item(luck, unlock_chance)
-        print(rarity)
-        if(rarity == "unlock"):
+        rarity.append(roll_item(luck, unlock_chance))
+        print(rarity[i])
+        if(rarity[i] == "unlock"):
             rarity_increase[i] = 0
-            upgradeColor = (30, 200, 255)
+            upgradeColor.append((30, 200, 255))
             totalAmountOfNumbers = TOTAL_AMOUNT_OF_MYTHIC_UPGRADES - 1
-        elif(rarity == "mythic"):
+        elif(rarity[i] == "mythic"):
             rarity_increase[i] = MYTHIC_POWER
-            upgradeColor = "red"
+            upgradeColor.append("red")
             totalAmountOfNumbers = TOTAL_AMOUNT_OF_MYTHIC_UPGRADES - 1
-        elif(rarity == "legendary"):
+        elif(rarity[i] == "legendary"):
             rarity_increase[i] = LEGENDARY_POWER
-            upgradeColor = "yellow"
+            upgradeColor.append("yellow")
             totalAmountOfNumbers = TOTAL_AMOUNT_OF_LEGENDARY_UPGRADES - 1
-        elif(rarity == "epic"):
+        elif(rarity[i] == "epic"):
             rarity_increase[i] = EPIC_POWER
-            upgradeColor = "purple"
+            upgradeColor.append("purple")
             totalAmountOfNumbers = TOTAL_AMOUNT_OF_EPIC_UPGRADES - 1
-        elif(rarity == "rare"):
+        elif(rarity[i] == "rare"):
             rarity_increase[i] = RARE_POWER
-            upgradeColor = "green"
+            upgradeColor.append("green")
             totalAmountOfNumbers = TOTAL_AMOUNT_OF_RARE_UPGRADES - 1
         else:
             rarity_increase[i] = COMMON_POWER
-            upgradeColor = "white"
+            upgradeColor.append("white")
             totalAmountOfNumbers = TOTAL_AMOUNT_OF_COMMON_UPGRADES - 1
 
         count = 0
@@ -405,10 +410,11 @@ def upgradeScreen(unlock_chance):
                     count += 1
         
         if(count == 0):
-            rarity = "unlock"
+            rarity[i] = "unlock"
             rarity_increase[i] = 0
-            upgradeColor = (30, 200, 255)
+            upgradeColor[i] = (30, 200, 255)
             totalAmountOfNumbers = TOTAL_AMOUNT_OF_MYTHIC_UPGRADES - 1
+            amount -= 1
 
 
         upgrade[i] = random.randint(0, totalAmountOfNumbers)
@@ -416,7 +422,7 @@ def upgradeScreen(unlock_chance):
         print(upgrade[i])
         print(UPGRADE_LIST)
         currentString = UPGRADE_LIST[upgrade[i]]
-        if(rarity == "unlock"):
+        if(rarity[i] == "unlock"):
             while(not(currentString in lockedUpgrades)):
                 upgrade[i] = random.randint(0, totalAmountOfNumbers)
                 currentString = UPGRADE_LIST[upgrade[i]]
@@ -425,7 +431,7 @@ def upgradeScreen(unlock_chance):
                 upgrade[i] = random.randint(0, totalAmountOfNumbers)
                 currentString = UPGRADE_LIST[upgrade[i]]
 
-        if(rarity == "unlock"):
+        if(rarity[i] == "unlock"):
             if(i == 1):
                 while(upgrade[0] == upgrade[1] or not(currentString in lockedUpgrades)):
                     upgrade[1] = random.randint(0, totalAmountOfNumbers)
@@ -444,18 +450,20 @@ def upgradeScreen(unlock_chance):
                     upgrade[2] = random.randint(0, totalAmountOfNumbers)
                     currentString = UPGRADE_LIST[upgrade[2]]
 
-        pygame.draw.rect(WIN, "black", pygame.Rect(getUpgradeLocation(i) - UPGRADE_SIZE / 2, HEIGHT / 2 - UPGRADE_SIZE / 2, UPGRADE_SIZE, UPGRADE_SIZE))
-        WIN.blit(FRAME, (getUpgradeLocation(i) - UPGRADE_SIZE / 2, HEIGHT / 2 - UPGRADE_SIZE / 2))
+    for i in range(amount):
+
+        pygame.draw.rect(WIN, "black", pygame.Rect(getUpgradeLocation(i, amount) - UPGRADE_SIZE / 2, HEIGHT / 2 - UPGRADE_SIZE / 2, UPGRADE_SIZE, UPGRADE_SIZE))
+        WIN.blit(FRAME, (getUpgradeLocation(i, amount) - UPGRADE_SIZE / 2, HEIGHT / 2 - UPGRADE_SIZE / 2))
 
         for t in range(totalAmountOfNumbers + 1):
             splitUpgrade = []
-            if(rarity == "unlock"):
+            if(rarity[i] == "unlock"):
                 splitUpgrade.append("Unlock")
             if(upgrade[i] == t):
                 nameSplit = UPGRADE_LIST[t].split()
                 for q in range(len(nameSplit)):
                     splitUpgrade.append(nameSplit[q])
-                if(rarity != "unlock"):
+                if(rarity[i] != "unlock"):
                     if(upgrade[i] <= 3 or upgrade[i] >= TOTAL_AMOUNT_OF_LEGENDARY_UPGRADES - 1): #upgrade spot
                         splitUpgrade.append(f"{upgrade_stats[t]} => {upgrade_stats[t] + UPGRADE_STAT_AMOUNT[t] * rarity_increase[i]}")
                     elif(upgrade[i] == 4):
@@ -466,30 +474,36 @@ def upgradeScreen(unlock_chance):
                     else:
                         splitUpgrade.append(f"{upgrade_stats[t]}s => {upgrade_stats[t] + UPGRADE_STAT_AMOUNT[t] * rarity_increase[i]}s")
                 for p in range(len(splitUpgrade)):
-                    upgrade_text = FONT_UPGRADE.render(splitUpgrade[p], 1, upgradeColor)
-                    WIN.blit(upgrade_text, (getUpgradeLocation(i) - upgrade_text.get_width()/2, HEIGHT/2 - (upgrade_text.get_height()/2) * ((len(splitUpgrade)) - p * 2) ))
+                    upgrade_text = FONT_UPGRADE.render(splitUpgrade[p], 1, upgradeColor[i])
+                    WIN.blit(upgrade_text, (getUpgradeLocation(i, amount) - upgrade_text.get_width()/2, HEIGHT/2 - (upgrade_text.get_height()/2) * ((len(splitUpgrade)) - p * 2) ))
     pygame.display.update()
-    run = True
-    while run:
-        for event in pygame.event.get():
-            keys = pygame.key.get_pressed()
-            if event.type == pygame.QUIT:
-                run = False
-                pygame.quit()
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                clickpos = event.pos
-                for i in range(len(upgrade)):
-                    if(clickpos[0] > getUpgradeLocation(i) - UPGRADE_SIZE / 2 and clickpos[0] < getUpgradeLocation(i) + UPGRADE_SIZE / 2 
-                       and clickpos[1] > HEIGHT / 2 - UPGRADE_SIZE / 2 and clickpos[1] < HEIGHT / 2 + UPGRADE_SIZE / 2):
-                        clickedAbility = upgrade[i]
-                        print(f"upgrade: {clickedAbility}")
-                        print(f"rarity: {rarity_increase[i]}")
-                        number = rarity_increase[i]
-                        run = False
-    giveAbility(clickedAbility, number)
+    if(amount > 0):
+        run = True
+        while run:
+            for event in pygame.event.get():
+                keys = pygame.key.get_pressed()
+                if event.type == pygame.QUIT:
+                    run = False
+                    pygame.quit()
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    clickpos = event.pos
+                    for i in range(amount):
+                        if(clickpos[0] > getUpgradeLocation(i, amount) - UPGRADE_SIZE / 2 and clickpos[0] < getUpgradeLocation(i, amount) + UPGRADE_SIZE / 2 
+                        and clickpos[1] > HEIGHT / 2 - UPGRADE_SIZE / 2 and clickpos[1] < HEIGHT / 2 + UPGRADE_SIZE / 2):
+                            clickedAbility = upgrade[i]
+                            print(f"upgrade: {clickedAbility}")
+                            print(f"rarity: {rarity_increase[i]}")
+                            number = rarity_increase[i]
+                            run = False
+        giveAbility(clickedAbility, number)
 
-def getUpgradeLocation(i):
-    return WIDTH - ((WIDTH / 7)) * (i * 2 + 1.5)
+def getUpgradeLocation(i, amount):
+    if(amount == 3):
+        return WIDTH - ((WIDTH / 7)) * (i * 2 + 1.5)
+    elif(amount == 2):
+        return WIDTH - ((WIDTH / 3)) * (i + 1)
+    elif(amount == 1):
+        return WIDTH - (WIDTH / 2)
     
 def giveAbility(clickedAbility, rarityIncrease):
     global upgrade_stats #upgrade spot
@@ -686,6 +700,10 @@ def inventoryScreen():
 def inventoryDraw(shieldLocation, shrinkLocation, timeSlowLocation,typeDecreaseLocation, screenWipeLocation):
     WIN.blit(BG, (0, 0))
     WIN.blit(INVENTORY, (WIDTH / 2 - INVENTORY_WIDTH / 2, HEIGHT / 2 - INVENTORY_HEIGHT / 2))
+
+    inventory_text = FONT_INVETORY.render("Press Space to Continue", 1, "black")
+    WIN.blit(inventory_text, (WIDTH/2 - inventory_text.get_width()/2, HEIGHT/10 - inventory_text.get_height()/2))
+
     WIN.blit(pygame.transform.scale(SHIELD_FULL, (INVENTORY_PIXEL * 6 - INVENTORY_DEDUCTION, INVENTORY_PIXEL * 6 - INVENTORY_DEDUCTION)), (shieldLocation))
     WIN.blit(pygame.transform.scale(SHRINK, (INVENTORY_PIXEL * 6 - INVENTORY_DEDUCTION, INVENTORY_PIXEL * 6 - INVENTORY_DEDUCTION)), (shrinkLocation))
     WIN.blit(pygame.transform.scale(CLOCK, (INVENTORY_PIXEL * 6 - INVENTORY_DEDUCTION, INVENTORY_PIXEL * 6 - INVENTORY_DEDUCTION)), (timeSlowLocation))
@@ -736,6 +754,14 @@ def reset():
     Upgrade.screenWipe.duration = 0
     upgrade_stats = [maxHp, luck, passiveHeal, tempHearts, health, Upgrade.shrink.duration, Upgrade.timeSlow.duration, Upgrade.shield.duration, Upgrade.typeDecrease.duration, Upgrade.screenWipe.duration] #upgrade spot
     lockedUpgrades = UPGRADE_LIST.copy() #upgrade spot
+
+    df = pd.read_csv(gameSaveData_path)
+    data = {"level": [0],
+                "upgrades": [[]], 
+                "locked upgrades": [[]]}
+    df = pd.DataFrame(data)
+    df.to_csv(gameSaveData_path, index=False)
+
     print("Reset")
 
 def chooseType(level):
@@ -792,27 +818,26 @@ def main(startLevel):
     global running
     global luck
     global health
-    while(True):
-        if(luck != 0):
-            for i in range(luck):
-                roll_item(i, UNLOCK_CHANCE)
-                print(i)
-        if(len(lockedUpgrades) >= len(UPGRADE_LIST)):
-            setUp()
-        inventoryScreen()
-        level = startLevel
-        running = True
-        while(running):
-            levelStart(level)
-            run(level)
-            if(running):
-                levelEnd(level)
-                upgradeScreen(UNLOCK_CHANCE)
-                inventoryScreen()
-            level += 1
-            saveGame(level)
-        giveGold(level - 1)
-        resetScreen()
+    if(luck != 0):
+        for i in range(luck):
+            roll_item(i, UNLOCK_CHANCE)
+            print(i)
+    if(len(lockedUpgrades) >= len(UPGRADE_LIST)):
+        setUp()
+    inventoryScreen()
+    level = startLevel
+    running = True
+    while(running):
+        levelStart(level)
+        run(level)
+        if(running):
+            levelEnd(level)
+            upgradeScreen(UNLOCK_CHANCE)
+            inventoryScreen()
+        level += 1
+        saveGame(level)
+    giveGold(level - 1)
+    reset()
 
 def setUp():
     global lockedUpgrades
@@ -859,8 +884,10 @@ def continueGame():
     main(int(df["level"][0]))
 
 def giveGold(level):
-    amountOfGold = round(level ** 1.5)
     df = pd.read_csv(allData_path)
+    prestige_level = df["prestige level"][0]
+
+    amountOfGold = round(level ** 1.5 * (prestige_level * PRESTIGE_GOLD_INCREASE + 1))
     newAmountOfGold = amountOfGold + df["gold"][0]
     if(df["high score"][0] < level):
         df.at[0, "high score"] = level
@@ -1146,7 +1173,10 @@ def run(level):
             WIN.blit(lost_text, (WIDTH/2 - lost_text.get_width()/2, HEIGHT/2 - lost_text.get_height()))
             lost_text = FONT_END.render(f"Level: {level}", 1, "black")
             WIN.blit(lost_text, (WIDTH/2 - lost_text.get_width()/2, HEIGHT/2))
-            gold_text = FONT_END.render(f"+{round(level ** 1.5)} gold", 1, "gold")
+
+            df = pd.read_csv(allData_path)
+            prestige_level = df["prestige level"][0]
+            gold_text = FONT_END.render(f"+{round(level ** 1.5 * (prestige_level * PRESTIGE_GOLD_INCREASE + 1))} gold", 1, "gold")
             WIN.blit(gold_text, (WIDTH/2 - gold_text.get_width()/2, HEIGHT/2 + lost_text.get_height()))
             pygame.display.update()
             pygame.time.delay(3000)
