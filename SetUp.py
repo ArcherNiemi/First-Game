@@ -9,7 +9,7 @@ app_folder = os.path.join(local_appdata, app_name)
 gameSaveData_path = os.path.join(app_folder, "gameSaveData.csv")
 allData_path = os.path.join(app_folder, "allData.csv")
 
-current_version = "0.0.1"
+current_version = "0.0.2"
 
 def setUp():
     if not(os.path.exists(app_folder)):
