@@ -14,10 +14,12 @@ FONT_UNLOCK = pygame.font.SysFont("arial", 20)
 FONT_TITLE = pygame.font.SysFont("arial", 100)
 FONT_SHOP = pygame.font.SysFont("arial", 25)
 FONT_INVENTORY = pygame.font.SysFont("arial", 25)
+FONT_PRESTIGE = pygame.font.SysFont("arial", 50)
 
 PLAY_BOX_SIZE = 400
 GOLD_SIZE = 40
 UNLOCK_GOLD_SIZE = 20
+PRESTIGE_GOLD_SIZE = 50
 ICON_SIZE = 150
 
 SHOP_Y = 300
@@ -58,6 +60,10 @@ SHOP_SCREEN_LOCATIONS = (((SCREEN_TOP_LEFT[1] + 18 * SCREEN_PIXIL, SCREEN_TOP_LE
 SHOP_SCREEN_UPGRADE_TAB_LOCATIONS = ((SCREEN_TOP_LEFT[0] + 6 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 36 * SCREEN_PIXIL), #unlock text
                                      ((SCREEN_TOP_LEFT[0] + 6 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 42 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[0] + 96 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 77 * SCREEN_PIXIL))) #unlock start and end
 
+SHOP_SCREEN_PRESTIGE_TAB_LOCATIONS = ((SCREEN_TOP_LEFT[0] + 50 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 69 * SCREEN_PIXIL), #prestige text
+                                     (SCREEN_TOP_LEFT[0] + 35 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 84 * SCREEN_PIXIL), #coin location
+                                     ((SCREEN_TOP_LEFT[0] + 6 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 42 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[0] + 96 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 77 * SCREEN_PIXIL))) #unlock start and end
+
 INVENTORY_LOCATION = (10, 10 + ICON_SIZE,  SHOP_Y + SHOP.get_height() + 15, SHOP_Y + SHOP.get_height() + 15 + INVENTORY.get_height())
 INVENTORY_SCREEN_LOCATIONS = (((SCREEN_TOP_LEFT[1] + 1 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 12 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[0] + 79 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 88 * SCREEN_PIXIL),(SCREEN_TOP_LEFT[0] + 89 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 98 * SCREEN_PIXIL)), #x and check mark locations
                               ((SCREEN_TOP_LEFT[1] + 19 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 29 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[0] + 5 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 47 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[0] + 54 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 97 * SCREEN_PIXIL)), #tab locations
@@ -77,6 +83,10 @@ IMAGES = [HP_INCREASE, LUCK, PASSIVE_HEAL, TEMP_HEARTS, HEAL, pygame.transform.s
 UPGRADE_PRICES = [10, 50, 50, 50, 5, 25, 25, 25, 100, 250]
 
 SHOP_BACKGROUND = pygame.Rect(300, 100, 300, 500)
+
+PRESTIGE_START_GOLD = 1000
+PRESTIGE_GOLD_INCREASE = 0.2
+PRESTIGE_COST_INCREASE = 0.5
 
 local_appdata = os.getenv("LOCALAPPDATA")  # e.g., C:\Users\<User>\AppData\Local
 app_name = "BulletBarrage"
@@ -200,6 +210,15 @@ def shopPageDraw(currentScreen, amountOfGold, sortedUpgrades):
                 main.WIN.blit(pygame.transform.scale(GOLD, (UNLOCK_GOLD_SIZE,UNLOCK_GOLD_SIZE)), (SHOP_SLOTS[i][0], SHOP_SLOTS[i][1] + SLOT_SIZE))
                 price_text = FONT_UNLOCK.render(f"{sortedUpgrades[1][i]}", "1", "gold")
                 main.WIN.blit(price_text, (SHOP_SLOTS[i][0]+ UNLOCK_GOLD_SIZE, SHOP_SLOTS[i][1] + SLOT_SIZE))
+    
+    if(currentScreen[0] == "prestige screen"):
+        prestige_tab_text = FONT_PRESTIGE.render("Prestige", 1, "black")
+        main.WIN.blit(prestige_tab_text, (SHOP_SCREEN_PRESTIGE_TAB_LOCATIONS[0][0] - prestige_tab_text.get_width() / 2, SHOP_SCREEN_PRESTIGE_TAB_LOCATIONS[0][1] - prestige_tab_text.get_height() / 2))
+
+        main.WIN.blit(pygame.transform.scale(GOLD,(PRESTIGE_GOLD_SIZE, PRESTIGE_GOLD_SIZE)), (SHOP_SCREEN_PRESTIGE_TAB_LOCATIONS[1][0] - PRESTIGE_GOLD_SIZE / 2, SHOP_SCREEN_PRESTIGE_TAB_LOCATIONS[1][1] - PRESTIGE_GOLD_SIZE / 2))
+
+        prestige_gold_text = FONT_PRESTIGE.render(f"{PRESTIGE_START_GOLD}", 1, "gold")
+        main.WIN.blit(prestige_gold_text, (SHOP_SCREEN_PRESTIGE_TAB_LOCATIONS[1][0] + PRESTIGE_GOLD_SIZE / 2, SHOP_SCREEN_PRESTIGE_TAB_LOCATIONS[1][1] - prestige_tab_text.get_height() / 2))
 
     pygame.display.update()
 
