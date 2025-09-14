@@ -1,6 +1,6 @@
 import main
+import SetUp
 import pygame
-import csv
 import pandas as pd
 import os
 import ast
@@ -97,11 +97,12 @@ allData_path = os.path.join(app_folder, "allData.csv")
 print(app_folder)
 
 def homePage():
+    versionCheck()
+
     print(allData_path)
     run = True
     createInventorySlots()
     createUnlockSlots()
-    createFiles()
     df = pd.read_csv(allData_path)
     amountOfGold = df["gold"][0]
     highScore = df["high score"][0]
@@ -376,22 +377,6 @@ def findUnlockedUpgrades(lockedUpgrades):
             unlockedUpgrades.append(main.UPGRADE_LIST[i])
     return unlockedUpgrades
 
-
-def createFiles():
-    if not(os.path.exists(app_folder)):
-        os.makedirs(app_folder, exist_ok=True)
-    if not(os.path.exists(gameSaveData_path)):
-        data = {"level": [0]}
-        df = pd.DataFrame(data)
-        df.to_csv(gameSaveData_path, index=False)
-    if not(os.path.exists(allData_path)):
-        data = {"gold": [362],
-                "high score": [50],
-                "locked upgrades": [main.UPGRADE_LIST],
-                "current loadout": [" "]}
-        df = pd.DataFrame(data)
-        df.to_csv(allData_path, index=False)
-
 def createInventorySlots():
     global INVENTORY_SLOTS_TOP
     global INVENTORY_SLOTS_BOTTOM
@@ -443,6 +428,13 @@ def sortLockedUpgrades(lockedUpgrades):
                     sortedList[0].append(main.UPGRADE_LIST[t])
                     sortedList[1].append(UPGRADE_PRICES[t])
     return sortedList
+
+def versionCheck():
+    df = pd.read_csv(allData_path)
+    if(SetUp.current_version != df['version'][0]):
+        SetUp.setUp()
+        print("running setup")
+    
 
         
 
