@@ -17,14 +17,16 @@ FONT_SHOP = pygame.font.SysFont("arial", 25)
 FONT_INVENTORY = pygame.font.SysFont("arial", 25)
 FONT_PRESTIGE = pygame.font.SysFont("arial", 50)
 FONT_POP_UP = pygame.font.SysFont("arial", 25)
+FONT_SETTINGS = pygame.font.SysFont("arial", 45)
 
 PLAY_BOX_SIZE = 400
 GOLD_SIZE = 40
 UNLOCK_GOLD_SIZE = 20
 PRESTIGE_GOLD_SIZE = 50
 ICON_SIZE = 150
+SMALL_ICON_SIZE = 75
 
-SHOP_Y = 300
+SHOP_Y = 200
 SCREEN_X = 500
 SCREEN_Y = 625
 SCREEN_PIXIL = int(SCREEN_X / 100)
@@ -35,11 +37,15 @@ PLAY_BOX = pygame.transform.scale(pygame.image.load("images/play_box.png"), (PLA
 GOLD = pygame.transform.scale(pygame.image.load("images/BB_Coin.png"), (GOLD_SIZE, GOLD_SIZE))
 SHOP = pygame.transform.scale(pygame.image.load("images/[CITYPNG.COM]Download Shopping Store Market Icon PNG - 800x800.png"), (ICON_SIZE, ICON_SIZE))
 INVENTORY = pygame.transform.scale(pygame.image.load("images/pngtree-pair-of-crossed-knight-swords-against-background-of-wooden-scandinavian-shield-png-image_6318863.png"), (ICON_SIZE, ICON_SIZE + 30))
+STATS = pygame.transform.scale(pygame.image.load("images/statistics.png"), (ICON_SIZE, ICON_SIZE))
+SETTINGS = pygame.transform.scale(pygame.image.load("images/NicePng_android-png_2371034.png"), (SMALL_ICON_SIZE, SMALL_ICON_SIZE))
 INVENTORY_SCREEN_UPGRADE_TAB = pygame.transform.scale(pygame.image.load("images/inventory_screen_upgrade_tab.png"), (SCREEN_X, SCREEN_Y))
 INVENTORY_SCREEN_COSMETICS_TAB = pygame.transform.scale(pygame.image.load("images/inventory_screen_cosmetics_tab.png"), (SCREEN_X, SCREEN_Y))
 SHOP_SCREEN_UPGRADE_TAB = pygame.transform.scale(pygame.image.load("images/BB_Shop_-_blue_tab_selected.png"), (SCREEN_X, SCREEN_Y))
 SHOP_SCREEN_COSMETICS_TAB = pygame.transform.scale(pygame.image.load("images/BB_Shop_-_yellow_tab_selected.png"), (SCREEN_X, SCREEN_Y))
 SHOP_SCREEN_PRESTIGE_TAB = pygame.transform.scale(pygame.image.load("images/BB_Shop_-_red_tab_selected.png"), (SCREEN_X, SCREEN_Y))
+STAT_SCREEN = pygame.transform.scale(pygame.image.load("images/stat_screen.png"), (SCREEN_X, SCREEN_Y))
+SETTINGS_SCREEN = pygame.transform.scale(pygame.image.load("images/settings_screen.png"), (SCREEN_X, SCREEN_Y))
 HEAL = pygame.transform.scale(pygame.image.load("images/heal.png"), (SLOT_SIZE, SLOT_SIZE))
 HP_INCREASE = pygame.transform.scale(pygame.image.load("images/hp_increase.png"), (SLOT_SIZE, SLOT_SIZE))
 PASSIVE_HEAL = pygame.transform.scale(pygame.image.load("images/passive_heal.png"), (SLOT_SIZE, SLOT_SIZE))
@@ -73,6 +79,13 @@ INVENTORY_SCREEN_LOCATIONS = (((SCREEN_TOP_LEFT[1] + 1 * SCREEN_PIXIL, SCREEN_TO
 INVENTORY_TOP = ((SCREEN_TOP_LEFT[0] + 5 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 36 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[0] + 96 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 64 * SCREEN_PIXIL))
 INVENTORY_BOTTOM = ((SCREEN_TOP_LEFT[0] + 5 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 71 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[0] + 96 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 121 * SCREEN_PIXIL))
 
+STAT_LOCATION = (10, 10 + ICON_SIZE,  SHOP_Y + (SHOP.get_height() + 15) * 2, SHOP_Y + (SHOP.get_height() + 15) * 2 + INVENTORY.get_height())
+STAT_SCREEN_LOCATIONS = ((SCREEN_TOP_LEFT[0] + 88 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 99 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[1] + 1 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 12 * SCREEN_PIXIL)) #x button location
+
+SETTINGS_LOCATION = (10, 10 + SMALL_ICON_SIZE)
+SETTINGS_SCREEN_LOCATIONS = (((SCREEN_TOP_LEFT[0] + 88 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 99 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[1] + 1 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 12 * SCREEN_PIXIL)), #x button location
+                             (SCREEN_TOP_LEFT[0] + 50 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 24 * SCREEN_PIXIL)) #change saves words
+
 INVENTORY_SLOTS_TOP = []
 INVENTORY_SLOTS_BOTTOM = []
 
@@ -97,21 +110,27 @@ app_name = "BulletBarrage"
 app_folder = os.path.join(local_appdata, app_name)
 
 gameSaveData_path = os.path.join(app_folder, "gameSaveData.csv")
+currentData_path = os.path.join(app_folder, "currentData.csv")
 allData_path = os.path.join(app_folder, "allData.csv")
 print(app_folder)
+current_save = 0
 
 def homePage():
+    global current_save
     versionCheck()
 
-    print(allData_path)
+    allData_df = pd.read_csv(allData_path)
+    current_save = allData_df["current save"][0]
+
+    print(currentData_path)
     run = True
     createInventorySlots()
     createUnlockSlots()
-    df = pd.read_csv(allData_path)
-    amountOfGold = df["gold"][0]
-    highScore = df["high score"][0]
-    prestigeLevel = df["prestige level"][0]
-    lockedUpgrades = ast.literal_eval(df["locked upgrades"][0])
+    df = pd.read_csv(currentData_path)
+    amountOfGold = df["gold"][current_save]
+    highScore = df["high score"][current_save]
+    prestigeLevel = df["prestige level"][current_save]
+    lockedUpgrades = ast.literal_eval(df["locked upgrades"][current_save])
 
     df2 = pd.read_csv(gameSaveData_path)
     level = df2["level"][0]
@@ -124,31 +143,35 @@ def homePage():
                 clickpos = event.pos
                 if(clickpos[0] >= NEW_GAME_LOCATION[0] and clickpos[0] <= NEW_GAME_LOCATION[1] and clickpos[1] >= NEW_GAME_LOCATION[2] and clickpos[1] <= NEW_GAME_LOCATION[3]):
                     main.main(1)
-                    df = pd.read_csv(allData_path)
-                    amountOfGold = df["gold"][0]
-                    highScore = df["high score"][0]
+                    df = pd.read_csv(currentData_path)
+                    amountOfGold = df["gold"][current_save]
+                    highScore = df["high score"][current_save]
                     lockedUpgrades = ast.literal_eval(df["locked upgrades"][0])
                 elif(clickpos[0] >= CONTINUE_LOCATION[0] and clickpos[0] <= CONTINUE_LOCATION[1] and clickpos[1] >= CONTINUE_LOCATION[2] and clickpos[1] <= CONTINUE_LOCATION[3]):
                     if(level != 0):
                         main.continueGame()
-                        df = pd.read_csv(allData_path)
-                        amountOfGold = df["gold"][0]
-                        highScore = df["high score"][0]
+                        df = pd.read_csv(currentData_path)
+                        amountOfGold = df["gold"][current_save]
+                        highScore = df["high score"][current_save]
                         lockedUpgrades = ast.literal_eval(df["locked upgrades"][0])
                     else:
                         popUpMessage("No Save Data")
                 elif(clickpos[0] >= SHOP_LOCATION[0] and clickpos[0] <= SHOP_LOCATION[1] and clickpos[1] >= SHOP_LOCATION[2] and clickpos[1] <= SHOP_LOCATION[3]):
                     shopPage(amountOfGold, lockedUpgrades, prestigeLevel)
-                    df = pd.read_csv(allData_path)
-                    amountOfGold = df["gold"][0]
-                    highScore = df["high score"][0]
-                    prestigeLevel = df["prestige level"][0]
+                    df = pd.read_csv(currentData_path)
+                    amountOfGold = df["gold"][current_save]
+                    highScore = df["high score"][current_save]
+                    prestigeLevel = df["prestige level"][current_save]
                     lockedUpgrades = ast.literal_eval(df["locked upgrades"][0])
                 elif(clickpos[0] >= INVENTORY_LOCATION[0] and clickpos[0] <= INVENTORY_LOCATION[1] and clickpos[1] >= INVENTORY_LOCATION[2] and clickpos[1] <= INVENTORY_LOCATION[3]):
                     inventoryPage(lockedUpgrades)
-        homePageDraw(amountOfGold, highScore, prestigeLevel)
+                elif(clickpos[0] >= STAT_LOCATION[0] and clickpos[0] <= STAT_LOCATION[1] and clickpos[1] >= STAT_LOCATION[2] and clickpos[1] <= STAT_LOCATION[3]):
+                    statPage(highScore, prestigeLevel)
+                elif(clickpos[0] >= SETTINGS_LOCATION[0] and clickpos[0] <= SETTINGS_LOCATION[1] and clickpos[1] >= SETTINGS_LOCATION[0] and clickpos[1] <= SETTINGS_LOCATION[1]):
+                    settingsPage()
+        homePageDraw(amountOfGold)
 
-def homePageDraw(amountOfGold, highScore, prestigeLevel):
+def homePageDraw(amountOfGold):
     main.WIN.blit(main.BG, (0, 0))
     main.WIN.blit(PLAY_BOX, (main.WIDTH - PLAY_BOX.get_width(), main.HEIGHT - PLAY_BOX.get_height()))
 
@@ -156,24 +179,25 @@ def homePageDraw(amountOfGold, highScore, prestigeLevel):
     main.WIN.blit(GOLD, (main.WIDTH - GOLD.get_width() - gold_text.get_width() - 15, 5))
     main.WIN.blit(gold_text, (main.WIDTH - gold_text.get_width() - 10, 0))
 
-    high_score_text = FONT_GOLD.render(f"High Score: {highScore}", 1, "black")
-    main.WIN.blit(high_score_text, (10, 10))
-
-    prestige_text = FONT_GOLD.render(f"Level: {prestigeLevel}", 1, "black")
-    main.WIN.blit(prestige_text, (10, 10 + high_score_text.get_height()))
-
     main.WIN.blit(SHOP, (10, SHOP_Y))
 
     main.WIN.blit(INVENTORY, (10, SHOP_Y + SHOP.get_height() + 15))
 
+    main.WIN.blit(STATS, (10, SHOP_Y + (SHOP.get_height() + 15) * 2))
+
+    main.WIN.blit(SETTINGS, (5,5))
+
     inventory_text = FONT_INVENTORY.render("Inventory", 1, "black")
     main.WIN.blit(inventory_text, (10 + ICON_SIZE / 2 - inventory_text.get_width() / 2, SHOP_Y + SHOP.get_height() + 10))
+
+    stat_text = FONT_INVENTORY.render("Stats", 1, "black")
+    main.WIN.blit(stat_text, (10 + ICON_SIZE / 2 - stat_text.get_width() / 2, SHOP_Y + (SHOP.get_height() + 10)*2))
 
     title_text = FONT_TITLE.render("Bullet Barage", 1, "black")
     play_text = FONT_HOME.render("Play", 1, "black")
     continue_text = FONT_PLAY.render("Continue", 1, "black")
     new_game_text = FONT_PLAY.render("New Game", 1, "black")
-    main.WIN.blit(title_text, (main.WIDTH / 2 - title_text.get_width() / 2, 80))
+    main.WIN.blit(title_text, (main.WIDTH / 2 - title_text.get_width() / 2,50))
     main.WIN.blit(play_text, (main.WIDTH - PLAY_BOX.get_width() / 2 - play_text.get_width() / 2, main.HEIGHT - PLAY_BOX.get_height() * 0.8 - play_text.get_height() / 2))
     main.WIN.blit(continue_text, (main.WIDTH - 78 * PLAY_BOX.get_width() / 200 - continue_text.get_width() / 2, main.HEIGHT - PLAY_BOX.get_height() * 0.45 - continue_text.get_height() / 2))
     main.WIN.blit(new_game_text, (main.WIDTH -  78 * PLAY_BOX.get_width() / 200 - new_game_text.get_width() / 2, main.HEIGHT - PLAY_BOX.get_height() * 0.15 - new_game_text.get_height() / 2))
@@ -257,10 +281,10 @@ def shopPageDraw(currentScreen, amountOfGold, sortedUpgrades, prestigeLevel):
     pygame.display.update()
 
 def buyItem(sortedUpgrades, location, prestigeLevel):
-    df = pd.read_csv(allData_path)
-    lockedUpgrades = ast.literal_eval(df["locked upgrades"][0])
-    gold = df["gold"][0]
-    current_loadout = ast.literal_eval(df["current loadout"][0])
+    df = pd.read_csv(currentData_path)
+    lockedUpgrades = ast.literal_eval(df["locked upgrades"][current_save])
+    gold = df["gold"][current_save]
+    current_loadout = ast.literal_eval(df["current loadout"][current_save])
 
     if(gold >= sortedUpgrades[1][location]):
         print(lockedUpgrades)
@@ -271,18 +295,18 @@ def buyItem(sortedUpgrades, location, prestigeLevel):
         print(gold)
         current_loadout.append(sortedUpgrades[0][location])
 
-        df.at[0, "gold"] = gold
-        df.at[0, "locked upgrades"] = lockedUpgrades
-        df.at[0, "current loadout"] = current_loadout
-        df.to_csv(allData_path, index=False)
+        df.at[current_save, "gold"] = gold
+        df.at[current_save, "locked upgrades"] = lockedUpgrades
+        df.at[current_save, "current loadout"] = current_loadout
+        df.to_csv(currentData_path, index=False)
         shopPage(gold, lockedUpgrades, prestigeLevel)
     else:
         popUpMessage("You don't have enough gold")
 
 def prestige():
-    df1 = pd.read_csv(allData_path)
-    prestige_level = df1["prestige level"][0]
-    gold = df1["gold"][0]
+    df1 = pd.read_csv(currentData_path)
+    prestige_level = df1["prestige level"][current_save]
+    gold = df1["gold"][current_save]
     print(prestige_level * PRESTIGE_START_COST * PRESTIGE_COST_INCREASE + PRESTIGE_START_COST)
     if(gold >= prestige_level * PRESTIGE_START_COST * PRESTIGE_COST_INCREASE + PRESTIGE_START_COST):
         prestige_level += 1
@@ -298,10 +322,16 @@ def prestige():
                 "locked upgrades": [main.UPGRADE_LIST],
                 "current loadout": [[]]}
         
-        df1 = pd.DataFrame(data1)
-        df1.to_csv(gameSaveData_path, index=False)
-        df2 = pd.DataFrame(data2)
-        df2.to_csv(allData_path, index=False)
+        df1.at[current_save, "gold"] = 0
+        df1.at[current_save, "high score"] = 0
+        df1.at[current_save, "prestige level"] = prestige_level
+        df1.at[current_save, "locked upgrades"] = main.UPGRADE_LIST
+        df1.at[current_save, "current loadout"] = []
+        
+        df2 = pd.DataFrame(data1)
+        df2.to_csv(gameSaveData_path, index=False)
+        df1 = pd.DataFrame(data2)
+        df1.to_csv(currentData_path, index=False)
         return True
     else:
         popUpMessage("You don't have enough gold")
@@ -426,16 +456,16 @@ def inventoryPageDraw(inventoryItemsTop, inventoryItemsBottom, currentScreen):
     pygame.display.update()
 
 def updateCurrentLoadout():
-    df = pd.read_csv(allData_path)
+    df = pd.read_csv(currentData_path)
     currentLoadoutList = []
     for i in range(len(INVENTORY_ITEMS_TOP)):
         if(INVENTORY_ITEMS_TOP[i] != ""):
             currentLoadoutList.append(INVENTORY_ITEMS_TOP[i])
     
     print(currentLoadoutList)
-    df.at[0, "current loadout"] = currentLoadoutList
-    df.to_csv(allData_path, index=False)
-    print(f"current: {df["current loadout"][0]}")
+    df.at[current_save, "current loadout"] = currentLoadoutList
+    df.to_csv(currentData_path, index=False)
+    print(f"current: {df["current loadout"][current_save]}")
 
 def setUpInventory(lockedUpgrades):
     global INVENTORY_ITEMS_TOP
@@ -445,8 +475,8 @@ def setUpInventory(lockedUpgrades):
     for i in range(len(INVENTORY_ITEMS_BOTTOM)):
         INVENTORY_ITEMS_BOTTOM[i] = ""
 
-    df = pd.read_csv(allData_path)
-    current_loadout = ast.literal_eval(df["current loadout"][0])
+    df = pd.read_csv(currentData_path)
+    current_loadout = ast.literal_eval(df["current loadout"][current_save])
     print(f"thing thing{current_loadout}")
     unlockedUpgrades = findUnlockedUpgrades(lockedUpgrades)
     
@@ -467,6 +497,60 @@ def setUpInventory(lockedUpgrades):
                     break
     print(f"setUp: {INVENTORY_ITEMS_TOP}")
     print(f"setUp: {INVENTORY_ITEMS_BOTTOM}")
+
+def statPage(highScore, prestigeLevel):
+    run = True
+    while(run):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+                pygame.quit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                clickpos = event.pos
+                if(clickpos[0] >= STAT_SCREEN_LOCATIONS[0][0] and clickpos[0] <= STAT_SCREEN_LOCATIONS[0][1] and 
+                     clickpos[1] >= STAT_SCREEN_LOCATIONS[1][0] and clickpos[1] <= STAT_SCREEN_LOCATIONS[1][1]):
+                        print("x")
+                        run = False
+            statPageDraw(highScore, prestigeLevel)
+
+def statPageDraw(highScore, prestigeLevel):
+    main.WIN.blit(main.BG, (0,0))
+    main.WIN.blit(STAT_SCREEN, SCREEN_TOP_LEFT)
+
+    high_score_text = FONT_GOLD.render(f"High Score: {highScore}", 1, "black")
+    main.WIN.blit(high_score_text, (SCREEN_TOP_LEFT[0] + 20, SCREEN_TOP_LEFT[1] + 90))
+
+    prestige_text = FONT_GOLD.render(f"Level: {prestigeLevel}", 1, "black")
+    main.WIN.blit(prestige_text, (SCREEN_TOP_LEFT[0] + 20, SCREEN_TOP_LEFT[1] + 90 + high_score_text.get_height()))
+
+    pygame.display.update()
+
+def settingsPage():
+    run = True
+    save_text = FONT_SETTINGS.render("Change Save", 1, "black")
+    while(run):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+                pygame.quit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                clickpos = event.pos
+                if(clickpos[0] >= SETTINGS_SCREEN_LOCATIONS[0][0][0] and clickpos[0] <= SETTINGS_SCREEN_LOCATIONS[0][0][1] and 
+                     clickpos[1] >= SETTINGS_SCREEN_LOCATIONS[0][1][0] and clickpos[1] <= SETTINGS_SCREEN_LOCATIONS[0][1][1]):
+                        print("x")
+                        run = False
+                elif(clickpos[0] >= SETTINGS_SCREEN_LOCATIONS[1][0] - save_text.get_width() / 2 and clickpos[0] <= SETTINGS_SCREEN_LOCATIONS[1][0] + save_text.get_width() / 2 and
+                     clickpos[1] >= SETTINGS_SCREEN_LOCATIONS[1][1] - save_text.get_height() / 2 and clickpos[1] <= SETTINGS_SCREEN_LOCATIONS[1][1] + save_text.get_height() / 2):
+                    print('click')
+            settingsPageDraw(save_text)
+
+def settingsPageDraw(save_text):
+    main.WIN.blit(main.BG, (0,0))
+    main.WIN.blit(SETTINGS_SCREEN, SCREEN_TOP_LEFT)
+
+    main.WIN.blit(save_text, (SETTINGS_SCREEN_LOCATIONS[1][0] - save_text.get_width() / 2, SETTINGS_SCREEN_LOCATIONS[1][1] - save_text.get_height() / 2))
+
+    pygame.display.update()
 
 def findUnlockedUpgrades(lockedUpgrades):
     unlockedUpgrades = []

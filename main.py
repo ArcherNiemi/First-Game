@@ -172,7 +172,10 @@ app_name = "BulletBarrage"
 app_folder = os.path.join(local_appdata, app_name)
 
 gameSaveData_path = os.path.join(app_folder, "gameSaveData.csv")
+currentData_path = os.path.join(app_folder, "currentData.csv")
 allData_path = os.path.join(app_folder, "allData.csv")
+
+current_save = 0
 
 running = True
 
@@ -841,8 +844,8 @@ def main(startLevel):
 
 def setUp():
     global lockedUpgrades
-    df = pd.read_csv(allData_path)
-    currentLoadout = ast.literal_eval(df["current loadout"][0])
+    df = pd.read_csv(currentData_path)
+    currentLoadout = ast.literal_eval(df["current loadout"][current_save])
     print(f"setUp: {currentLoadout}")
     for i in range(len(UPGRADE_LIST)):
         if(UPGRADE_LIST[i] in currentLoadout):
@@ -884,15 +887,15 @@ def continueGame():
     main(int(df["level"][0]))
 
 def giveGold(level):
-    df = pd.read_csv(allData_path)
-    prestige_level = df["prestige level"][0]
+    df = pd.read_csv(currentData_path)
+    prestige_level = df["prestige level"][current_save]
 
     amountOfGold = round(level ** 1.5 * (prestige_level * PRESTIGE_GOLD_INCREASE + 1))
-    newAmountOfGold = amountOfGold + df["gold"][0]
-    if(df["high score"][0] < level):
-        df.at[0, "high score"] = level
-    df.at[0, "gold"] = newAmountOfGold
-    df.to_csv(allData_path, index=False)
+    newAmountOfGold = amountOfGold + df["gold"][current_save]
+    if(df["high score"][current_save] < level):
+        df.at[current_save, "high score"] = level
+    df.at[current_save, "gold"] = newAmountOfGold
+    df.to_csv(currentData_path, index=False)
 
     gameSaveData = {"level": [level],
                     "upgrades": [upgrade_stats], 
@@ -1174,8 +1177,8 @@ def run(level):
             lost_text = FONT_END.render(f"Level: {level}", 1, "black")
             WIN.blit(lost_text, (WIDTH/2 - lost_text.get_width()/2, HEIGHT/2))
 
-            df = pd.read_csv(allData_path)
-            prestige_level = df["prestige level"][0]
+            df = pd.read_csv(currentData_path)
+            prestige_level = df["prestige level"][current_save]
             gold_text = FONT_END.render(f"+{round(level ** 1.5 * (prestige_level * PRESTIGE_GOLD_INCREASE + 1))} gold", 1, "gold")
             WIN.blit(gold_text, (WIDTH/2 - gold_text.get_width()/2, HEIGHT/2 + lost_text.get_height()))
             pygame.display.update()
