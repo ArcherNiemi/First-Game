@@ -18,6 +18,7 @@ FONT_INVENTORY = pygame.font.SysFont("arial", 25)
 FONT_PRESTIGE = pygame.font.SysFont("arial", 50)
 FONT_POP_UP = pygame.font.SysFont("arial", 25)
 FONT_SETTINGS = pygame.font.SysFont("arial", 45)
+FONT_SAVE = pygame.font.SysFont("arial", 35)
 
 PLAY_BOX_SIZE = 400
 GOLD_SIZE = 40
@@ -46,6 +47,7 @@ SHOP_SCREEN_COSMETICS_TAB = pygame.transform.scale(pygame.image.load("images/BB_
 SHOP_SCREEN_PRESTIGE_TAB = pygame.transform.scale(pygame.image.load("images/BB_Shop_-_red_tab_selected.png"), (SCREEN_X, SCREEN_Y))
 STAT_SCREEN = pygame.transform.scale(pygame.image.load("images/stat_screen.png"), (SCREEN_X, SCREEN_Y))
 SETTINGS_SCREEN = pygame.transform.scale(pygame.image.load("images/settings_screen.png"), (SCREEN_X, SCREEN_Y))
+SAVE_SCREEN = pygame.transform.scale(pygame.image.load("images/save_screen.png"), (SCREEN_X, SCREEN_Y))
 HEAL = pygame.transform.scale(pygame.image.load("images/heal.png"), (SLOT_SIZE, SLOT_SIZE))
 HP_INCREASE = pygame.transform.scale(pygame.image.load("images/hp_increase.png"), (SLOT_SIZE, SLOT_SIZE))
 PASSIVE_HEAL = pygame.transform.scale(pygame.image.load("images/passive_heal.png"), (SLOT_SIZE, SLOT_SIZE))
@@ -86,6 +88,10 @@ SETTINGS_LOCATION = (10, 10 + SMALL_ICON_SIZE)
 SETTINGS_SCREEN_LOCATIONS = (((SCREEN_TOP_LEFT[0] + 88 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 99 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[1] + 1 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 12 * SCREEN_PIXIL)), #x button location
                              (SCREEN_TOP_LEFT[0] + 50 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 24 * SCREEN_PIXIL)) #change saves words
 
+SAVE_SCREEN_LOCATIONS = (((SCREEN_TOP_LEFT[0] + 88 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 99 * SCREEN_PIXIL), (SCREEN_TOP_LEFT[1] + 1 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 12 * SCREEN_PIXIL)), #x button location
+                             (SCREEN_TOP_LEFT[0] + 5 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 19 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 57 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 94 * SCREEN_PIXIL), #words
+                             ((SCREEN_TOP_LEFT[0] + 87 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 95 * SCREEN_PIXIL),(SCREEN_TOP_LEFT[1] + 35 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 47 * SCREEN_PIXIL),(SCREEN_TOP_LEFT[1] + 72 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 83 * SCREEN_PIXIL),(SCREEN_TOP_LEFT[1] + 109 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 120 * SCREEN_PIXIL)), #trash cans
+                             ((SCREEN_TOP_LEFT[0] + 2 * SCREEN_PIXIL, SCREEN_TOP_LEFT[0] + 99 * SCREEN_PIXIL),(SCREEN_TOP_LEFT[1] + 16 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 50 * SCREEN_PIXIL),(SCREEN_TOP_LEFT[1] + 54 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 87 * SCREEN_PIXIL),(SCREEN_TOP_LEFT[1] + 91 * SCREEN_PIXIL, SCREEN_TOP_LEFT[1] + 124 * SCREEN_PIXIL)))
 INVENTORY_SLOTS_TOP = []
 INVENTORY_SLOTS_BOTTOM = []
 
@@ -121,6 +127,7 @@ def homePage():
 
     allData_df = pd.read_csv(allData_path)
     current_save = allData_df["current save"][0]
+    print(f"current {current_save}")
 
     print(currentData_path)
     run = True
@@ -169,6 +176,13 @@ def homePage():
                     statPage(highScore, prestigeLevel)
                 elif(clickpos[0] >= SETTINGS_LOCATION[0] and clickpos[0] <= SETTINGS_LOCATION[1] and clickpos[1] >= SETTINGS_LOCATION[0] and clickpos[1] <= SETTINGS_LOCATION[1]):
                     settingsPage()
+                    allData_df = pd.read_csv(allData_path)
+                    df = pd.read_csv(currentData_path)
+                    current_save = allData_df["current save"][0]
+                    amountOfGold = df["gold"][current_save]
+                    highScore = df["high score"][current_save]
+                    prestigeLevel = df["prestige level"][current_save]
+                    lockedUpgrades = ast.literal_eval(df["locked upgrades"][0])
         homePageDraw(amountOfGold)
 
 def homePageDraw(amountOfGold):
@@ -374,8 +388,6 @@ def inventoryPage(lockedUpgrades):
                             popUpMessage("You must have at least 5 upgrades selected")
                         elif(count > 10):
                             popUpMessage("You can't have more than 10 upgrades selected")
-                        elif(commons < 3):
-                            popUpMessage("You must have at least 3 commons")
                         else:
                             INVENTORY_ITEMS_TOP = inventoryItemsTop.copy()
                             INVENTORY_ITEMS_BOTTOM = inventoryItemsBottom.copy()
@@ -541,7 +553,7 @@ def settingsPage():
                         run = False
                 elif(clickpos[0] >= SETTINGS_SCREEN_LOCATIONS[1][0] - save_text.get_width() / 2 and clickpos[0] <= SETTINGS_SCREEN_LOCATIONS[1][0] + save_text.get_width() / 2 and
                      clickpos[1] >= SETTINGS_SCREEN_LOCATIONS[1][1] - save_text.get_height() / 2 and clickpos[1] <= SETTINGS_SCREEN_LOCATIONS[1][1] + save_text.get_height() / 2):
-                    print('click')
+                    savePage()
             settingsPageDraw(save_text)
 
 def settingsPageDraw(save_text):
@@ -549,6 +561,79 @@ def settingsPageDraw(save_text):
     main.WIN.blit(SETTINGS_SCREEN, SCREEN_TOP_LEFT)
 
     main.WIN.blit(save_text, (SETTINGS_SCREEN_LOCATIONS[1][0] - save_text.get_width() / 2, SETTINGS_SCREEN_LOCATIONS[1][1] - save_text.get_height() / 2))
+
+    pygame.display.update()
+
+def savePage():
+    run = True
+    allData_df = pd.read_csv(allData_path)
+    currentData_df = pd.read_csv(currentData_path)
+    while(run):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+                pygame.quit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                clickpos = event.pos
+                if(clickpos[0] >= SAVE_SCREEN_LOCATIONS[0][0][0] and clickpos[0] <= SAVE_SCREEN_LOCATIONS[0][0][1] and 
+                     clickpos[1] >= SAVE_SCREEN_LOCATIONS[0][1][0] and clickpos[1] <= SAVE_SCREEN_LOCATIONS[0][1][1]):
+                        print("x")
+                        run = False
+                elif(clickpos[0] >= SAVE_SCREEN_LOCATIONS[2][0][0] and clickpos[0] <= SAVE_SCREEN_LOCATIONS[2][0][1]):
+                    if(clickpos[1] >= SAVE_SCREEN_LOCATIONS[2][1][0] and clickpos[1] <= SAVE_SCREEN_LOCATIONS[2][1][1]):
+                        currentData_df.at[0, "gold"] = 0
+                        currentData_df.at[0, "high score"] = 0
+                        currentData_df.at[0, "prestige level"] = 0
+                        currentData_df.at[0, "locked upgrades"] = main.UPGRADE_LIST
+                        currentData_df.at[0, "current loadout"] = [" "]
+                        currentData_df.to_csv(currentData_path, index=False)
+                        run = False
+                        savePage()
+                    elif(clickpos[1] >= SAVE_SCREEN_LOCATIONS[2][2][0] and clickpos[1] <= SAVE_SCREEN_LOCATIONS[2][2][1]):
+                        currentData_df.at[1, "gold"] = 0
+                        currentData_df.at[1, "high score"] = 0
+                        currentData_df.at[1, "prestige level"] = 0
+                        currentData_df.at[1, "locked upgrades"] = main.UPGRADE_LIST
+                        currentData_df.at[1, "current loadout"] = [" "]
+                        currentData_df.to_csv(currentData_path, index=False)
+                        run = False
+                        savePage()
+                    elif(clickpos[1] >= SAVE_SCREEN_LOCATIONS[2][3][0] and clickpos[1] <= SAVE_SCREEN_LOCATIONS[2][3][1]):
+                        currentData_df.at[2, "gold"] = 0
+                        currentData_df.at[2, "high score"] = 0
+                        currentData_df.at[2, "prestige level"] = 0
+                        currentData_df.at[2, "locked upgrades"] = main.UPGRADE_LIST
+                        currentData_df.at[2, "current loadout"] = [" "]
+                        currentData_df.to_csv(currentData_path, index=False)
+                        run = False
+                        savePage()
+                elif(clickpos[0] >= SAVE_SCREEN_LOCATIONS[3][0][0] and clickpos[0] <= SAVE_SCREEN_LOCATIONS[3][0][1]):
+                    if(clickpos[1] >= SAVE_SCREEN_LOCATIONS[3][1][0] and clickpos[1] <= SAVE_SCREEN_LOCATIONS[3][1][1]):
+                        allData_df.at[0, "current save"] = 0
+                        allData_df.to_csv(allData_path, index=False)
+                        run = False
+                    elif(clickpos[1] >= SAVE_SCREEN_LOCATIONS[3][2][0] and clickpos[1] <= SAVE_SCREEN_LOCATIONS[3][2][1]):
+                        allData_df.at[0, "current save"] = 1
+                        allData_df.to_csv(allData_path, index=False)
+                        run = False
+                    elif(clickpos[1] >= SAVE_SCREEN_LOCATIONS[3][3][0] and clickpos[1] <= SAVE_SCREEN_LOCATIONS[3][3][1]):
+                        allData_df.at[0, "current save"] = 2
+                        allData_df.to_csv(allData_path, index=False)
+                        run = False
+            savePageDraw()
+
+def savePageDraw():
+    main.WIN.blit(main.BG, (0,0))
+    main.WIN.blit(SAVE_SCREEN, SCREEN_TOP_LEFT)
+    df = pd.read_csv(currentData_path)
+
+    for i in range(3):
+        save_text = FONT_SETTINGS.render(f"Save {i + 1}", "1", "black")
+        main.WIN.blit(save_text, (SAVE_SCREEN_LOCATIONS[1][0], SAVE_SCREEN_LOCATIONS[1][i + 1]))
+
+        prestige_level = df["prestige level"][i]
+        level_text = FONT_SAVE.render(f"Level {prestige_level}", "1", "black")
+        main.WIN.blit(level_text, (SAVE_SCREEN_LOCATIONS[1][0], SAVE_SCREEN_LOCATIONS[1][i + 1] + save_text.get_height()))
 
     pygame.display.update()
 

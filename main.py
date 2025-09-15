@@ -844,6 +844,10 @@ def main(startLevel):
 
 def setUp():
     global lockedUpgrades
+    global current_save
+    df1 = pd.read_csv(allData_path)
+    current_save = df1["current save"][0]
+
     df = pd.read_csv(currentData_path)
     currentLoadout = ast.literal_eval(df["current loadout"][current_save])
     print(f"setUp: {currentLoadout}")
